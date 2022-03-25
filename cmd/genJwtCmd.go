@@ -17,9 +17,11 @@ var (
 			//pathFlag := cmd.Flag("tokenpath")
 			secretFlag := cmd.Flag("secret")
 
-			if secretFlag != nil {
+			if secretFlag != nil && len(secretFlag.Value.String()) > 0 {
 				fmt.Println(GenerateSymmetric(secretFlag.Value.String()))
 			}
+
+			fmt.Println(GenerateSimple())
 		},
 	}
 )
