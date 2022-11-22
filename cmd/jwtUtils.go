@@ -60,10 +60,13 @@ func GenerateSymmetric(secretKey string, claims map[string]string) (string, *jwt
 	return signedString, token
 }
 
-func GenerateSigned() string {
-	customClaims := customClaims()
+func GenerateSigned(claims map[string]string) string {
+	mapClaims := CustomMapClaims{
+		CustomClaims:   claims,
+		StandardClaims: sampleStandardClaims(),
+	}
 	privateKey, _ := privateAndPublicKeyInMemory()
-	jwtWithClaims := jwt.NewWithClaims(jwt.SigningMethodRS512, customClaims)
+	jwtWithClaims := jwt.NewWithClaims(jwt.SigningMethodRS512, mapClaims)
 	fromPEM, err := jwt.ParseRSAPrivateKeyFromPEM(privateKey)
 	if err != nil {
 		panic(err)
@@ -76,25 +79,6 @@ func GenerateSigned() string {
 func validate(t jwt.Token) {
 	method := t.Method
 	fmt.Println(method)
-}
-
-func customClaims() CustomClaims {
-	now := time.Now()
-	datePlus3 := now.AddDate(0, 0, 3)
-
-	return CustomClaims{
-		"David",
-		"Ulicny",
-		jwt.StandardClaims{
-			Audience:  "Z",
-			ExpiresAt: datePlus3.Unix(),
-			Id:        "123",
-			IssuedAt:  now.Unix(),
-			Issuer:    "asd",
-			NotBefore: 123,
-			Subject:   "asd",
-		},
-	}
 }
 
 func Parse(tokenString string) *jwt.Token {

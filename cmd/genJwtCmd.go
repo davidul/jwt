@@ -14,6 +14,7 @@ var (
 	genJwtCmd = &cobra.Command{
 		Use:   "gen",
 		Short: "Generate JWT",
+		Long:  "Generate JWT token. There are symmetric and asymmetric cipher.",
 		Run: func(cmd *cobra.Command, args []string) {
 			//pathFlag := cmd.Flag("tokenpath")
 			secretFlag := cmd.Flag("secret")
@@ -43,6 +44,6 @@ var (
 func init() {
 	genJwtCmd.Flags().StringVarP(&TokenPath, "tokenpath", "t", "", "Token path")
 	genJwtCmd.Flags().StringVarP(&TokenName, "tokenname", "n", "", "Token name")
-	genJwtCmd.Flags().StringVarP(&Secret, "secret", "s", "", "Secret")
-	genJwtCmd.Flags().StringToString("claims", Claims, "maps")
+	genJwtCmd.Flags().StringVarP(&Secret, "secret", "s", "", "hash input key")
+	genJwtCmd.Flags().StringToString("claims", nil, "key=value pairs, separated by comma")
 }
