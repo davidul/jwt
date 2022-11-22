@@ -12,11 +12,33 @@ type CustomClaims struct {
 	jwt.StandardClaims
 }
 
-func GenerateSimple() string {
-	claims := customClaims()
+type CustomMapClaims struct {
+	customClaims map[string]string
+	jwt.StandardClaims
+}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodNone, claims)
-	signingString, err := token.SigningString()
+func sampleStandardClaims() jwt.StandardClaims {
+	now := time.Now()
+	plusYear := now.AddDate(1, 0, 0)
+	return jwt.StandardClaims{
+		Audience:  "Recipient",
+		ExpiresAt: plusYear.UnixMilli(),
+		Id:        "1",
+		IssuedAt:  now.UnixMilli(),
+		Issuer:    "Sample",
+		NotBefore: now.UnixMilli(),
+		Subject:   "User",
+	}
+}
+
+func GenerateSimple(claims map[string]string) string {
+	mapClaims := CustomMapClaims{
+		customClaims:   claims,
+		StandardClaims: sampleStandardClaims(),
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, mapClaims)
+	fmt.Println(ToString(token))
+	signingString, err := token.SignedString([]byte("AllYourBase"))
 	if err != nil {
 		panic(err)
 	}
@@ -24,9 +46,10 @@ func GenerateSimple() string {
 	return signingString
 }
 
-func GenerateSymmetric(secretKey string) string {
-	claims := customClaims()
-	withClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+func GenerateSymmetric(secretKey string, claims map[string]string) string {
+	//claims := customClaims()
+
+	withClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, nil)
 	signedString, err := withClaims.SignedString([]byte(secretKey))
 	if err != nil {
 		panic(err)
@@ -71,4 +94,45 @@ func customClaims() CustomClaims {
 			Subject:   "asd",
 		},
 	}
+}
+
+func Parse(tokenString string) *jwt.Token {
+	parse, err := jwt.Parse(tokenString, nil)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	return parse
+}
+
+func ToString(token *jwt.Token) string {
+	header := token.Header
+	fmt.Println("Header")
+	for k, v := range header {
+		fmt.Printf("%s : %s \n", k, v)
+	}
+
+	switch v := token.Claims.(type) {
+	case jwt.StandardClaims:
+		return StandardClaimsToString(v)
+	case CustomMapClaims:
+		return customMapClaimsToString(v)
+	}
+
+	return ""
+}
+
+func customMapClaimsToString(s CustomMapClaims) string {
+	claims := s.customClaims
+	var ret string
+	for k, v := range claims {
+		ret += fmt.Sprintf("%s : %s \n", k, v)
+	}
+
+	return ret
+}
+
+func StandardClaimsToString(s jwt.StandardClaims) string {
+	b := fmt.Sprintf("Id: %s \nAudience: %s\n", s.Id, s.Audience)
+	return b
 }
