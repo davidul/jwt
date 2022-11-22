@@ -13,7 +13,7 @@ type CustomClaims struct {
 }
 
 type CustomMapClaims struct {
-	customClaims map[string]string
+	CustomClaims map[string]string
 	jwt.StandardClaims
 }
 
@@ -33,7 +33,7 @@ func sampleStandardClaims() jwt.StandardClaims {
 
 func GenerateSimple(claims map[string]string) (string, *jwt.Token) {
 	mapClaims := CustomMapClaims{
-		customClaims:   claims,
+		CustomClaims:   claims,
 		StandardClaims: sampleStandardClaims(),
 	}
 
@@ -48,7 +48,7 @@ func GenerateSimple(claims map[string]string) (string, *jwt.Token) {
 
 func GenerateSymmetric(secretKey string, claims map[string]string) (string, *jwt.Token) {
 	mapClaims := CustomMapClaims{
-		customClaims:   claims,
+		CustomClaims:   claims,
 		StandardClaims: sampleStandardClaims(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, mapClaims)
@@ -98,7 +98,9 @@ func customClaims() CustomClaims {
 }
 
 func Parse(tokenString string) *jwt.Token {
-	parse, err := jwt.Parse(tokenString, nil)
+	parse, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return "sekret", nil
+	})
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -118,13 +120,15 @@ func HeaderToString(token *jwt.Token) string {
 		return StandardClaimsToString(v)
 	case CustomMapClaims:
 		return CustomMapClaimsToString(v)
+	case jwt.MapClaims:
+		MapClaimsToString(v)
 	}
 
 	return ""
 }
 
 func CustomMapClaimsToString(s CustomMapClaims) string {
-	claims := s.customClaims
+	claims := s.CustomClaims
 	var ret string = "Custom Claims\n"
 	for k, v := range claims {
 		ret += fmt.Sprintf("\t %s : %s \n", k, v)
@@ -144,4 +148,27 @@ func StandardClaimsToString(s jwt.StandardClaims) string {
 	ret += fmt.Sprintf("\t Expires at: %s\n", time.UnixMilli(s.ExpiresAt).Format(time.RFC3339))
 
 	return ret
+}
+
+func MapClaimsToString(s jwt.MapClaims) string {
+	i := s["CustomClaims"]
+	m := i.(map[string]interface{})
+	fmt.Printf("Custom Claims:\n")
+	for k, v := range m {
+		fmt.Printf("\t%s : %s \n", k, v)
+	}
+
+	fmt.Printf("Standard Claims:\n")
+	for k, v := range s {
+		if k != "CustomClaims" {
+			if k == "exp" || k == "iat" || k == "nbf" {
+				milli := time.UnixMilli(int64(v.(float64)))
+
+				fmt.Printf("\t%s : %s \n", k, milli.Format(time.RFC3339))
+			} else {
+				fmt.Printf("\t%s : %s \n", k, v)
+			}
+		}
+	}
+	return ""
 }
