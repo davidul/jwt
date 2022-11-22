@@ -7,7 +7,7 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "jwt",
 	Short: "Sing JWT",
-	Long:  "CLI utility to generate and sing the JWT tokens",
+	Long:  "CLI utility to generate and sign the JWT tokens",
 }
 
 func Execute() error {
@@ -17,4 +17,5 @@ func Execute() error {
 func init() {
 	rootCmd.AddCommand(genCmd)
 	rootCmd.AddCommand(genJwtCmd)
+	rootCmd.AddCommand(parseCmd)
 }
