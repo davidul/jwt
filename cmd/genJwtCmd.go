@@ -24,14 +24,18 @@ var (
 			}
 
 			if secretFlag != nil && len(secretFlag.Value.String()) > 0 {
-				fmt.Printf("Generating JWT token with secret \"%s\" \n", secretFlag.Value.String())
-				fmt.Println(GenerateSymmetric(secretFlag.Value.String(), claimMap))
+				fmt.Printf("=== Generating JWT token with secret === \"%s\" \n", secretFlag.Value.String())
+				symmetric, token := GenerateSymmetric(secretFlag.Value.String(), claimMap)
+				fmt.Printf("%s \n", HeaderToString(token))
+				fmt.Println(symmetric)
 				return
 			}
 
-			fmt.Println("Generating Simple Token")
+			fmt.Println("=== Generating Simple Token ===")
 
-			fmt.Println(GenerateSimple(claimMap))
+			signedString, token := GenerateSimple(claimMap)
+			fmt.Printf("%s \n", HeaderToString(token))
+			fmt.Printf("Signed string: \n%s\n", signedString)
 		},
 	}
 )
