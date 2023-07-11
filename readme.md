@@ -1,3 +1,50 @@
+# JWT Command line
+
+Command line application for testing JWT. You can generate JWT and sign it.
+## Commands
+### Help
+```shell
+./jwt help
+```
+
+### Generate Public/Private Key
+```shell
+jwt genkeys --keypath . --keyname test
+```
+This will generate private and public key in current directory.
+Named testprivate.pem and testpublic.pem. 
+These keys can be used for signing and verifying JWT (testing purposes only).
+
+## Generate token
+
+`gen` command will generate sample token.
+```shell
+./jwt gen 
+```
+This token does not contain custom claims. Just standard
+claims. Output looks like this
+
+```
+Header
+        typ : JWT 
+        alg : HS256 
+Custom Claims
+Standard Claims
+         Id: 1 
+         Audience: Recipient
+         Issuer: Sample
+         Issued at: 2022-11-23T09:15:58+01:00
+         Not Before: 2022-11-23T09:15:58+01:00
+         Expires at: 2023-11-23T09:15:58+01:00
+```
+
+Change the signing method
+```shell
+./jwt gen --signingmethod HS384
+```
+
+ 
+
 # JWT Samples
 JSON Web tokens defined in [RFC 7519](https://datatracker.ietf.org/doc/html/rfc7519) . 
 JWT represents set of claims. 

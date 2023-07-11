@@ -9,8 +9,10 @@ var (
 	KeyName string
 
 	genCmd = &cobra.Command{
-		Use:   "genkeys",
-		Short: "Generates public/private keypair",
+		Use:     "genkeys",
+		Short:   "Generates public/private keypair",
+		Long:    "Generates public/private keypair specified by keypath and keyname",
+		Example: "jwt genkeys --keypath . --keyname test ",
 		Run: func(cmd *cobra.Command, args []string) {
 			PkRsa(KeyPath, KeyName)
 		}}

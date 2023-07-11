@@ -31,13 +31,13 @@ func sampleStandardClaims() jwt.StandardClaims {
 	}
 }
 
-func GenerateSimple(claims map[string]string) (string, *jwt.Token) {
+func GenerateSimple(claims map[string]string, signingMethod jwt.SigningMethod) (string, *jwt.Token) {
 	mapClaims := CustomMapClaims{
 		CustomClaims:   claims,
 		StandardClaims: sampleStandardClaims(),
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, mapClaims)
+	token := jwt.NewWithClaims(signingMethod, mapClaims)
 	signingString, err := token.SignedString([]byte("AllYourBase"))
 	if err != nil {
 		panic(err)
@@ -46,12 +46,12 @@ func GenerateSimple(claims map[string]string) (string, *jwt.Token) {
 	return signingString, token
 }
 
-func GenerateSymmetric(secretKey string, claims map[string]string) (string, *jwt.Token) {
+func GenerateSymmetric(secretKey string, claims map[string]string, signingMethod jwt.SigningMethod) (string, *jwt.Token) {
 	mapClaims := CustomMapClaims{
 		CustomClaims:   claims,
 		StandardClaims: sampleStandardClaims(),
 	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, mapClaims)
+	token := jwt.NewWithClaims(signingMethod, mapClaims)
 	signedString, err := token.SignedString([]byte(secretKey))
 	if err != nil {
 		panic(err)
