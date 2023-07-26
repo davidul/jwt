@@ -58,8 +58,8 @@ func MarshalEcdsa(privateKey *ecdsa.PrivateKey, publicKey *ecdsa.PublicKey) ([]b
 
 // encode PEM to memory
 func EncodePem(mPrivateKey []byte, mPublicKey []byte) ([]byte, []byte) {
-	privateBlock := &pem.Block{Type: "PRIVATE KEY", Bytes: mPrivateKey}
-	publicBlock := &pem.Block{Type: "PUBLIC KEY", Bytes: mPublicKey}
+	privateBlock := &pem.Block{Type: "RSA PRIVATE KEY", Bytes: mPrivateKey}
+	publicBlock := &pem.Block{Type: "RSA PUBLIC KEY", Bytes: mPublicKey}
 
 	memoryPrivate := pem.EncodeToMemory(privateBlock)
 	memoryPublic := pem.EncodeToMemory(publicBlock)
@@ -67,10 +67,33 @@ func EncodePem(mPrivateKey []byte, mPublicKey []byte) ([]byte, []byte) {
 	return memoryPrivate, memoryPublic
 }
 
+func EncodePublicKeyToPemFile(publicKey []byte, filePath string, fileName string) {
+	publicBlock := &pem.Block{Type: "RSA PUBLIC KEY", Bytes: publicKey}
+	EncodePemFile(publicBlock, path.Join(filePath, fileName))
+}
+
+func EncodePrivateKeyToPemFile(privateKey []byte, filePath string, fileName string) {
+	privateBlock := &pem.Block{Type: "RSA PRIVATE KEY", Bytes: privateKey}
+	EncodePemFile(privateBlock, path.Join(filePath, fileName))
+}
+
+func EncodePemFile(pemBlock *pem.Block, fileName string) {
+	privateFile, err := os.Create(fileName)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = pem.Encode(privateFile, pemBlock)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+}
+
 // encode PEM to file
 func EncodePemToFile(mPrivateKey []byte, mPublicKey []byte, filePath string, prefix string) {
-	privateBlock := &pem.Block{Type: "PRIVATE KEY", Bytes: mPrivateKey}
-	publicBlock := &pem.Block{Type: "PUBLIC KEY", Bytes: mPublicKey}
+	privateBlock := &pem.Block{Type: "RSA PRIVATE KEY", Bytes: mPrivateKey}
+	publicBlock := &pem.Block{Type: "RSA PUBLIC KEY", Bytes: mPublicKey}
 
 	privatePrefix := prefix + "_private.pem"
 	publicPrefix := prefix + "_public.pem"
