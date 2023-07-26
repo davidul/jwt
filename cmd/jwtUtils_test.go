@@ -9,21 +9,21 @@ import (
 )
 
 func TestGenerateSymmetric(t *testing.T) {
-	symmetric, _ := GenerateSymmetric("sekret", map[string]string{})
+	symmetric, token := GenerateSymmetric("sekret", map[string]string{}, jwt.SigningMethodHS256)
 	assert.NotNil(t, symmetric)
-	parse, err := jwt.Parse(symmetric, nil)
-	if err != nil {
-		fmt.Println(err)
-	}
+	token, err := jwt.Parse(symmetric, func(token *jwt.Token) (interface{}, error) {
+		return []byte("sekret"), nil
+	})
 
-	fmt.Println(parse.Method)
+	assert.Nil(t, err)
+	assert.NotNil(t, token)
 }
 
 func TestGenerateSymetricWithCustomClaims(t *testing.T) {
 	var claims = make(map[string]string)
 	claims["firstName"] = "David"
 
-	symmetric, token := GenerateSymmetric("sekret", claims)
+	symmetric, token := GenerateSymmetric("sekret", claims, jwt.SigningMethodHS256)
 	fmt.Println(symmetric)
 	fmt.Println(token)
 

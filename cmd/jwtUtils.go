@@ -20,13 +20,15 @@ type CustomMapClaims struct {
 func sampleStandardClaims() jwt.StandardClaims {
 	now := time.Now()
 	plusYear := now.AddDate(1, 0, 0)
+	minusDay := now.AddDate(0, 0, -1)
+	minus2days := now.AddDate(0, 0, -2)
 	return jwt.StandardClaims{
 		Audience:  "Recipient",
-		ExpiresAt: plusYear.UnixMilli(),
+		ExpiresAt: plusYear.Unix(),
 		Id:        "1",
-		IssuedAt:  now.UnixMilli(),
+		IssuedAt:  minus2days.Unix(),
 		Issuer:    "Sample",
-		NotBefore: now.UnixMilli(),
+		NotBefore: minusDay.Unix(),
 		Subject:   "User",
 	}
 }
@@ -48,7 +50,7 @@ func GenerateSimple(claims map[string]string, signingMethod jwt.SigningMethod) (
 
 func GenerateSymmetric(secretKey string, claims map[string]string, signingMethod jwt.SigningMethod) (string, *jwt.Token) {
 	mapClaims := CustomMapClaims{
-		CustomClaims:   claims,
+		//CustomClaims:   claims,
 		StandardClaims: sampleStandardClaims(),
 	}
 	token := jwt.NewWithClaims(signingMethod, mapClaims)
