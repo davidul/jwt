@@ -8,11 +8,35 @@ Command line application for testing JWT. You can generate JWT and sign it.
 ```
 
 ### Generate Public/Private Key
-```shell
-jwt genkeys --keypath . --keyname test
+`genkeys` will generate private and public key to stdout.
+
+Flags
 ```
+--keypath string   path to directory where keys will be stored (default ".")
+--privatekey string   private key file name (default "private.pem")
+--publickey string   public key file name (default "public.pem")
+
+```
+
+```shell
+jwt genkeys
+```
+
+Specify file path, this will generate `private.pem` and `public.pem` in current directory.
+```shell
+jwt genkeys --keypath .
+```
+Verify keys
+```shell
+openssl rsa -in path/to/rsa_key.pem -text -noout
+```
+
+Specify file name
+```shell
+./jwt genkeys --keypath . --privatekey pk --publickey puk
+```
+
 This will generate private and public key in current directory.
-Named testprivate.pem and testpublic.pem. 
 These keys can be used for signing and verifying JWT (testing purposes only).
 
 ## Generate token
@@ -48,6 +72,79 @@ Change the signing method
 # JWT Samples
 JSON Web tokens defined in [RFC 7519](https://datatracker.ietf.org/doc/html/rfc7519) . 
 JWT represents set of claims. 
+
+JWT stands for "JSON Web Token." It is a compact and self-contained way of representing 
+information between two parties in a secure manner as a JSON object. 
+JWT is commonly used for authentication and authorization in web applications and APIs.
+
+The JWT is typically issued by an authentication server when a user logs in or 
+requests access to certain protected resources. The client (usually a web browser or mobile app) 
+then includes the JWT in the Authorization header when making subsequent requests to the server. 
+The server can then validate the JWT to authenticate the user and authorize access to the requested resources.
+
+Since JWTs are digitally signed, they are tamper-proof. This means that the server can trust the information 
+contained in the token without the need to store session information on the server side. 
+This makes JWT a stateless and scalable approach for user authentication and authorization in distributed systems. 
+However, it's essential to keep the secret used for signing JWTs secure to prevent unauthorized access and tampering.
+## JWT Structure
+JWT is a string consisting of three parts separated by dots.
+```
+header.payload.signature
+```
+### Header
+Header is a JSON object containing information about the token.
+```json
+{
+  "typ": "JWT",
+  "alg": "HS256"
+}
+```
+What is the purpose of the header? It is used to tell the receiver
+how to validate the token. In this case the token is signed with HMAC
+using SHA-256.
+What is the purpose of the typ? It is used to tell the receiver
+what is the type of the token. In this case it is JWT.
+What other types are there? There is JWE (JSON Web Encryption).
+
+### Payload
+Payload is a JSON object containing claims.
+```json
+{
+  "sub": "1234567890",
+  "name": "John Doe",
+  "admin": true
+}
+```
+### Signature
+Signature is a hash of header and payload. 
+```shell
+HMACSHA256(
+  base64UrlEncode(header) + "." +
+  base64UrlEncode(payload),
+  secret)
+```
+## JWT Claims
+Claims are key-value pairs holding information about a subject.
+
+### Registered Claims
+Registered claims are predefined claims.
+```
+iss (issuer)
+sub (subject)
+aud (audience)
+exp (expiration time)
+nbf (not before)
+iat (issued at)
+jti (JWT ID)
+```
+### Public Claims
+Public claims are defined by RFC 7519. 
+```
+https://www.iana.org/assignments/jwt/jwt.xhtml
+```
+### Private Claims
+Private claims are custom claims defined by the user.
+
 ## JOSE Header
 Javascript Object Signing and Encryption
 Example JOSE header
