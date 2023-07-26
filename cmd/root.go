@@ -18,7 +18,7 @@ func Execute() error {
 func init() {
 	rootCmd.PersistentFlags().StringVarP(&dateFormat, "dateformat", "d", "RFC",
 		"pass datetime format")
-	rootCmd.AddCommand(genCmd)
+	rootCmd.AddCommand(genPkCmd)
 	rootCmd.AddCommand(genJwtCmd)
 	rootCmd.AddCommand(parseCmd)
 }
