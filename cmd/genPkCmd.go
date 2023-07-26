@@ -7,9 +7,10 @@ import (
 )
 
 var (
-	KeyPath string
-	KeyName string
-	KeyType string
+	KeyPath        string
+	PrivateKeyName string
+	PublicKeyName  string
+	KeyType        string
 
 	Output string
 
@@ -30,23 +31,30 @@ var (
 			strOutput := "stdout"
 
 			keyPath := cmd.Flag("keypath")
-			keyName := cmd.Flag("prefix")
+			privateKeyName := cmd.Flag("privatekey")
+			publicKeyName := cmd.Flag("publickey")
 
 			output := cmd.Flag("output")
 			if output.Value.String() != "" {
 				strOutput = output.Value.String()
 			}
-			if keyName.Value.String() != "" {
-				strPrivateKeyName = keyName.Value.String()
-				strPrivateKeyName += "_private.pem"
 
-				strPublicKeyName = keyName.Value.String()
-				strPublicKeyName += "_public.pem"
+			if keyPath.Value.String() != "" {
+				strOutput = "file"
+			}
+
+			if privateKeyName.Value.String() != "" {
+				strPrivateKeyName = privateKeyName.Value.String()
+			}
+
+			if publicKeyName.Value.String() != "" {
+				strPublicKeyName = publicKeyName.Value.String()
 			}
 			keyType := cmd.Flag("keytype")
 			if keyType.Value.String() != "" {
 				strKeyTypeName = keyType.Value.String()
 			}
+
 			if strKeyTypeName == "rsa" {
 				privateKey, publicKey := pkg.GenKeysRsa()
 				bPrivateKey, bPublicKey := pkg.MarshalRsa(privateKey, publicKey)
@@ -55,17 +63,27 @@ var (
 					fmt.Println(string(pr))
 					fmt.Println(string(pu))
 				} else {
+					pkg.EncodePrivateKeyToPemFile(bPrivateKey, keyPath.Value.String(), strPrivateKeyName)
+					pkg.EncodePublicKeyToPemFile(bPublicKey, keyPath.Value.String(), strPublicKeyName)
+				}
+			} else if strKeyTypeName == "ecdsa" {
+				privateKey, publicKey := pkg.GenKeysEcdsa()
+				bPrivateKey, bPublicKey := pkg.MarshalEcdsa(privateKey, publicKey)
+				if strOutput == "stdout" {
+					pr, pu := pkg.EncodePem(bPrivateKey, bPublicKey)
+					fmt.Println(string(pr))
+					fmt.Println(string(pu))
+				} else {
 					pkg.EncodePemToFile(bPrivateKey, bPublicKey, keyPath.Value.String(), strPrivateKeyName)
 				}
-
 			}
-			//PkRsa(KeyPath, KeyName)
 		}}
 )
 
 func init() {
 	genPkCmd.Flags().StringVarP(&KeyPath, "keypath", "k", "", "target directory")
-	genPkCmd.Flags().StringVarP(&KeyName, "prefix", "n", "", "file prefix")
+	genPkCmd.Flags().StringVarP(&PrivateKeyName, "privatekey", "n", "", "file name")
+	genPkCmd.Flags().StringVarP(&PublicKeyName, "publickey", "p", "", "file name")
 	genPkCmd.Flags().StringVarP(&KeyType, "keytype", "t", "rsa", "key type")
 	genPkCmd.Flags().StringVarP(&Output, "output", "o", "", "output file or stdout")
 }
