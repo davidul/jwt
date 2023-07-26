@@ -65,6 +65,16 @@ func TestEncodePemToFile(t *testing.T) {
 	file, err = os.Open(path.Join("", "test_private.pem"))
 	assert.Nil(t, err)
 	assert.NotNil(t, file)
+
+	//delete files
+	err = os.Remove(path.Join("", "private.pem"))
+	assert.Nil(t, err)
+	err = os.Remove(path.Join("", "public.pem"))
+	assert.Nil(t, err)
+	err = os.Remove(path.Join("", "test_private.pem"))
+	assert.Nil(t, err)
+	err = os.Remove(path.Join("", "test_public.pem"))
+	assert.Nil(t, err)
 }
 
 func TestDecodePem(t *testing.T) {
