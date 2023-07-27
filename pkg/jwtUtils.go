@@ -1,16 +1,13 @@
-package cmd
+package pkg
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/golang-jwt/jwt"
 	"time"
 )
 
-type CustomClaims struct {
-	FirstName string `json:"firstName"`
-	LastName  string `json:"lastName"`
-	jwt.StandardClaims
-}
+var DEFAULT_SECRET = "AllYourBase"
 
 type CustomMapClaims struct {
 	CustomClaims map[string]string
@@ -40,7 +37,7 @@ func GenerateSimple(claims map[string]string, signingMethod jwt.SigningMethod) (
 	}
 
 	token := jwt.NewWithClaims(signingMethod, mapClaims)
-	signingString, err := token.SignedString([]byte("AllYourBase"))
+	signingString, err := token.SignedString([]byte(DEFAULT_SECRET))
 	if err != nil {
 		panic(err)
 	}
@@ -50,7 +47,7 @@ func GenerateSimple(claims map[string]string, signingMethod jwt.SigningMethod) (
 
 func GenerateSymmetric(secretKey string, claims map[string]string, signingMethod jwt.SigningMethod) (string, *jwt.Token) {
 	mapClaims := CustomMapClaims{
-		//CustomClaims:   claims,
+		CustomClaims:   claims,
 		StandardClaims: sampleStandardClaims(),
 	}
 	token := jwt.NewWithClaims(signingMethod, mapClaims)
@@ -67,13 +64,21 @@ func GenerateSigned(claims map[string]string) string {
 		CustomClaims:   claims,
 		StandardClaims: sampleStandardClaims(),
 	}
-	privateKey, _ := privateAndPublicKeyInMemory()
+
+	//privateKey, _ := cmd.PrivateAndPublicKeyInMemory()
+	private, public := GenKeysRsa()
+	fmt.Println("Private and public keys")
+	fmt.Println(private)
+	fmt.Println(public)
 	jwtWithClaims := jwt.NewWithClaims(jwt.SigningMethodRS512, mapClaims)
-	fromPEM, err := jwt.ParseRSAPrivateKeyFromPEM(privateKey)
+	//fromPEM, err := jwt.ParseRSAPrivateKeyFromPEM(privateKey)
+	//if err != nil {
+	//	panic(err)
+	//}
+	signedString, err := jwtWithClaims.SignedString(private)
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
 	}
-	signedString, err := jwtWithClaims.SignedString(fromPEM)
 
 	return signedString
 }
@@ -83,9 +88,9 @@ func validate(t jwt.Token) {
 	fmt.Println(method)
 }
 
-func Parse(tokenString string) *jwt.Token {
+func Parse(tokenString string, secret string) *jwt.Token {
 	parse, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return "sekret", nil
+		return []byte(secret), nil
 	})
 	if err != nil {
 		fmt.Println(err)
@@ -157,4 +162,19 @@ func MapClaimsToString(s jwt.MapClaims) string {
 		}
 	}
 	return ""
+}
+
+func Encode(data string, secret string) string {
+	c := new(jwt.MapClaims) //map[string]any{}
+	err := json.Unmarshal([]byte(data), &c)
+	if err != nil {
+		fmt.Println(err)
+	}
+	token := jwt.New(jwt.SigningMethodHS256)
+	token.Claims = c
+	signingString, err := token.SignedString([]byte(secret))
+	if err != nil {
+		fmt.Println(err)
+	}
+	return signingString
 }
