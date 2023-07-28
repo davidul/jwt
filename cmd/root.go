@@ -20,5 +20,6 @@ func init() {
 		"pass datetime format")
 	rootCmd.AddCommand(genPkCmd)
 	rootCmd.AddCommand(genJwtCmd)
-	rootCmd.AddCommand(parseCmd)
+	rootCmd.AddCommand(decodeCmd)
+	rootCmd.AddCommand(encodeCmd)
 }

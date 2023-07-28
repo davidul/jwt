@@ -61,7 +61,7 @@ func PkRsa(keyPath string, keyName string) {
 
 }
 
-func privateAndPublicKeyInMemory() ([]byte, []byte) {
+func PrivateAndPublicKeyInMemory() ([]byte, []byte) {
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
 		panic(err)

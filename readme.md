@@ -1,6 +1,7 @@
 # JWT Command line
 
 Command line application for testing JWT. You can generate JWT and sign it.
+You can also generate public and private key for testing purposes.
 ## Commands
 ### Help
 ```shell
@@ -21,11 +22,13 @@ Flags
 ```shell
 jwt genkeys
 ```
+Will generate private and public key to stdout.
 
 Specify file path, this will generate `private.pem` and `public.pem` in current directory.
 ```shell
 jwt genkeys --keypath .
 ```
+
 Verify keys
 ```shell
 openssl rsa -in path/to/rsa_key.pem -text -noout
@@ -39,7 +42,7 @@ Specify file name
 This will generate private and public key in current directory.
 These keys can be used for signing and verifying JWT (testing purposes only).
 
-## Generate token
+## Generate Sample token
 
 `gen` command will generate sample token.
 ```shell
@@ -49,6 +52,7 @@ This token does not contain custom claims. Just standard
 claims. Output looks like this
 
 ```
+=== Generating Simple Token ===
 Header
         typ : JWT 
         alg : HS256 
@@ -57,9 +61,19 @@ Standard Claims
          Id: 1 
          Audience: Recipient
          Issuer: Sample
-         Issued at: 2022-11-23T09:15:58+01:00
-         Not Before: 2022-11-23T09:15:58+01:00
-         Expires at: 2023-11-23T09:15:58+01:00
+         Issued at: 1970-01-20T14:30:54+01:00
+         Not Before: 1970-01-20T14:32:20+01:00
+         Expires at: 1970-01-20T23:20:49+01:00
+ 
+Signed string: 
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+.eyJDdXN0b21DbGFpbXMiOnt9LCJhdWQiOiJSZWNpcGllbnQiLCJleHAiOjE3MjIwNDkzMzUsImp0aSI6IjEiLCJpYXQiOjE2OTAyNTQxMzUsImlzcyI6IlNhbXBsZSIsIm5iZiI6MTY5MDM0MDUzNSwic3ViIjoiVXNlciJ9
+.XSNQLGX6Gfdk_PToao9KBrHAC7aWBeqjaT3zDwWrfR4
+```
+Default secret is `AllYourBase`
+You can change the secret with `--secret` flag.
+```shell
+./jwt gen --secret mysecret
 ```
 
 Change the signing method
@@ -67,7 +81,18 @@ Change the signing method
 ./jwt gen --signingmethod HS384
 ```
 
- 
+## Encode JWT
+
+```shell
+./jwt encode '{"sub":"1234567890","name":"John Doe","admin":true}' AllYourBase
+```
+
+
+## Decode JWT
+
+```shell
+./jwt decode eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhdWQiLCJleHAiOjE3MjIxNTIxNjgsImlhdCI6MTY5MDM1Njk2OCwiaXNzIjoiaXNzIiwibmJmIjoxNjkwNDQzMzY4LCJzdWIiOiJzdWIifQ._1L7ZTk4QpybaCk4rx2pgTwl1cGaRl8W9AUH_T3TfT0 AllYourBase
+```
 
 # JWT Samples
 JSON Web tokens defined in [RFC 7519](https://datatracker.ietf.org/doc/html/rfc7519) . 

@@ -14,29 +14,50 @@ type CustomMapClaims struct {
 	jwt.StandardClaims
 }
 
+func ToMapClaims(claims map[string]string) jwt.MapClaims {
+	m := make(map[string]interface{})
+	for k, v := range claims {
+		m[k] = v
+	}
+
+	return m
+}
+
+func StandardClaimsToMapClaims(claims jwt.StandardClaims) jwt.MapClaims {
+	m := make(map[string]interface{})
+	m["aud"] = claims.Audience
+	m["exp"] = claims.ExpiresAt
+	m["iat"] = claims.IssuedAt
+	m["iss"] = claims.Issuer
+	m["nbf"] = claims.NotBefore
+	m["sub"] = claims.Subject
+
+	return m
+}
+
 func sampleStandardClaims() jwt.StandardClaims {
 	now := time.Now()
 	plusYear := now.AddDate(1, 0, 0)
 	minusDay := now.AddDate(0, 0, -1)
 	minus2days := now.AddDate(0, 0, -2)
 	return jwt.StandardClaims{
-		Audience:  "Recipient",
+		Audience:  "aud",
 		ExpiresAt: plusYear.Unix(),
 		Id:        "1",
 		IssuedAt:  minus2days.Unix(),
-		Issuer:    "Sample",
+		Issuer:    "iss",
 		NotBefore: minusDay.Unix(),
-		Subject:   "User",
+		Subject:   "sub",
 	}
 }
 
 func GenerateSimple(claims map[string]string, signingMethod jwt.SigningMethod) (string, *jwt.Token) {
-	mapClaims := CustomMapClaims{
-		CustomClaims:   claims,
-		StandardClaims: sampleStandardClaims(),
+	toMapClaims := StandardClaimsToMapClaims(sampleStandardClaims())
+	for k, v := range claims {
+		toMapClaims[k] = v
 	}
 
-	token := jwt.NewWithClaims(signingMethod, mapClaims)
+	token := jwt.NewWithClaims(signingMethod, toMapClaims)
 	signingString, err := token.SignedString([]byte(DEFAULT_SECRET))
 	if err != nil {
 		panic(err)
@@ -46,11 +67,12 @@ func GenerateSimple(claims map[string]string, signingMethod jwt.SigningMethod) (
 }
 
 func GenerateSymmetric(secretKey string, claims map[string]string, signingMethod jwt.SigningMethod) (string, *jwt.Token) {
-	mapClaims := CustomMapClaims{
-		CustomClaims:   claims,
-		StandardClaims: sampleStandardClaims(),
+	toMapClaims := StandardClaimsToMapClaims(sampleStandardClaims())
+	for k, v := range claims {
+		toMapClaims[k] = v
 	}
-	token := jwt.NewWithClaims(signingMethod, mapClaims)
+
+	token := jwt.NewWithClaims(signingMethod, toMapClaims)
 	signedString, err := token.SignedString([]byte(secretKey))
 	if err != nil {
 		panic(err)
@@ -60,9 +82,9 @@ func GenerateSymmetric(secretKey string, claims map[string]string, signingMethod
 }
 
 func GenerateSigned(claims map[string]string) string {
-	mapClaims := CustomMapClaims{
-		CustomClaims:   claims,
-		StandardClaims: sampleStandardClaims(),
+	toMapClaims := StandardClaimsToMapClaims(sampleStandardClaims())
+	for k, v := range claims {
+		toMapClaims[k] = v
 	}
 
 	//privateKey, _ := cmd.PrivateAndPublicKeyInMemory()
@@ -70,7 +92,7 @@ func GenerateSigned(claims map[string]string) string {
 	fmt.Println("Private and public keys")
 	fmt.Println(private)
 	fmt.Println(public)
-	jwtWithClaims := jwt.NewWithClaims(jwt.SigningMethodRS512, mapClaims)
+	jwtWithClaims := jwt.NewWithClaims(jwt.SigningMethodRS512, toMapClaims)
 	//fromPEM, err := jwt.ParseRSAPrivateKeyFromPEM(privateKey)
 	//if err != nil {
 	//	panic(err)
@@ -81,11 +103,6 @@ func GenerateSigned(claims map[string]string) string {
 	}
 
 	return signedString
-}
-
-func validate(t jwt.Token) {
-	method := t.Method
-	fmt.Println(method)
 }
 
 func Parse(tokenString string, secret string) *jwt.Token {
@@ -143,19 +160,27 @@ func StandardClaimsToString(s jwt.StandardClaims) string {
 
 func MapClaimsToString(s jwt.MapClaims) string {
 	i := s["CustomClaims"]
-	m := i.(map[string]interface{})
-	fmt.Printf("Custom Claims:\n")
-	for k, v := range m {
-		fmt.Printf("\t%s : %s \n", k, v)
+	if i != nil {
+		m := i.(map[string]interface{})
+		fmt.Printf("Custom Claims:\n")
+		for k, v := range m {
+			fmt.Printf("\t%s : %s \n", k, v)
+		}
 	}
 
 	fmt.Printf("Standard Claims:\n")
 	for k, v := range s {
 		if k != "CustomClaims" {
 			if k == "exp" || k == "iat" || k == "nbf" {
-				milli := time.UnixMilli(int64(v.(float64)))
+				switch v.(type) {
+				case int64:
+					milli := time.UnixMilli(v.(int64))
+					fmt.Printf("\t%s : %s \n", k, milli.Format(time.RFC3339))
+				case float64:
+					milli := time.UnixMilli(int64(v.(float64)))
+					fmt.Printf("\t%s : %s \n", k, milli.Format(time.RFC3339))
+				}
 
-				fmt.Printf("\t%s : %s \n", k, milli.Format(time.RFC3339))
 			} else {
 				fmt.Printf("\t%s : %s \n", k, v)
 			}
@@ -164,17 +189,16 @@ func MapClaimsToString(s jwt.MapClaims) string {
 	return ""
 }
 
-func Encode(data string, secret string) string {
+func Encode(data string, secret string) (string, error) {
 	c := new(jwt.MapClaims) //map[string]any{}
 	err := json.Unmarshal([]byte(data), &c)
 	if err != nil {
-		fmt.Println(err)
+		return "", err
 	}
+
 	token := jwt.New(jwt.SigningMethodHS256)
 	token.Claims = c
 	signingString, err := token.SignedString([]byte(secret))
-	if err != nil {
-		fmt.Println(err)
-	}
-	return signingString
+
+	return signingString, err
 }

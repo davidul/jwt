@@ -12,19 +12,24 @@ var encodeCmd = &cobra.Command{
 	Use:   "encode",
 	Short: "Encode JWT",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Encode JWT")
 		secret := cmd.Flag("secret")
+		strSecret := cmd.Flag("secret").Value.String()
+		if strSecret == "" {
+			strSecret = pkg.DEFAULT_SECRET
+		}
+
 		if len(args) == 0 {
 			fmt.Println("Error: No token provided")
 			return
 		}
 
-		if secret != nil && len(secret.Value.String()) > 0 {
-			fmt.Printf("=== Encoding JWT token with secret === \"%s\" \n", secret.Value.String())
-			encode := pkg.Encode(args[0], secret.Value.String())
-			fmt.Println(encode)
-			return
+		fmt.Printf("=== Encoding JWT token with secret === \"%s\" \n", secret.Value.String())
+		encode, err := pkg.Encode(args[0], secret.Value.String())
+		if err != nil {
+			fmt.Fprintln(cmd.OutOrStderr(), err)
 		}
+		fmt.Println(encode)
+		return
 	},
 }
 
