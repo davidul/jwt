@@ -10,7 +10,7 @@ var SecretE string
 
 var encodeCmd = &cobra.Command{
 	Use:   "encode",
-	Short: "Encode JWT",
+	Short: "Encode JWT token",
 	Run: func(cmd *cobra.Command, args []string) {
 		secret := cmd.Flag("secret")
 		strSecret := cmd.Flag("secret").Value.String()
