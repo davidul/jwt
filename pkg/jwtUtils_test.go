@@ -55,8 +55,9 @@ func TestGenerateSigned(t *testing.T) {
 }
 
 func TestEncode(t *testing.T) {
-	encode := Encode("{\"sub\":\"1234567890\",\"name\":\"John Doe\",\"admin\":true}", DEFAULT_SECRET)
+	encode, err := Encode("{\"sub\":\"1234567890\",\"name\":\"John Doe\",\"admin\":true}", DEFAULT_SECRET)
 	assert.NotNil(t, encode)
+	assert.Nil(t, err)
 }
 
 func TestToMapClaims(t *testing.T) {
