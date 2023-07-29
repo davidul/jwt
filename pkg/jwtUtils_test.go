@@ -1,7 +1,6 @@
 package pkg
 
 import (
-	"fmt"
 	"github.com/golang-jwt/jwt"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -50,8 +49,29 @@ func TestGenerateSymmetricWithCustomClaims(t *testing.T) {
 
 func TestGenerateSigned(t *testing.T) {
 	var claims = make(map[string]string)
-	signed := GenerateSigned(claims)
-	fmt.Println(signed)
+	privateKey, publicKey := GenKeysRsa()
+	signed := GenerateSigned(claims, privateKey)
+	assert.NotNil(t, signed)
+
+	key := ParseWithPublicKey(signed, publicKey)
+	assert.NotNil(t, key)
+	assert.Equal(t, key.Valid, true)
+}
+
+func TestParseWithPublicKey(t *testing.T) {
+
+	privateBlock := DecodePrivatePemFromFile("/Users/david/IdeaProjects/_courses/_go/jwt/private.pem")
+
+	privateKey := UnmarshalPrivateRsa(privateBlock)
+
+	var claims = make(map[string]string)
+	claims["firstName"] = "David"
+	signed := GenerateSigned(claims, privateKey)
+	assert.NotNil(t, signed)
+
+	key := ParseWithPublicKeyFile(signed, "/Users/david/IdeaProjects/_courses/_go/jwt/public.pem")
+	assert.NotNil(t, key)
+	assert.Equal(t, key.Valid, true)
 }
 
 func TestEncode(t *testing.T) {

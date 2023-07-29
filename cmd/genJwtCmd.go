@@ -8,11 +8,10 @@ import (
 )
 
 var (
-	TokenPath     string
-	TokenName     string
 	Secret        string
-	Claims        map[string]string
 	signingMethod string
+
+	PrivateKey string
 
 	genJwtCmd = &cobra.Command{
 		Use:   "gen",
@@ -22,60 +21,90 @@ var (
 			"Asymmetric cipher uses different key for encryption and decryption." +
 			"Symmetric cipher are: HS256, HS384, HS512",
 		Run: func(cmd *cobra.Command, args []string) {
-			//pathFlag := cmd.Flag("tokenpath")
 			secretFlag := cmd.Flag("secret")
 			signingMethod := cmd.Flag("signingmethod")
 			claimMap, err := cmd.Flags().GetStringToString("claims")
+			privateKeyString := cmd.Flag("privatekey").Value.String()
 
+			if privateKeyString != "" {
+				fmt.Println("=== Generating JWT token with private key ===")
+				genAsymmetric(privateKeyString, claimMap)
+				return
+			}
 			if err != nil {
 				fmt.Println(err)
 			}
 
 			if secretFlag != nil && len(secretFlag.Value.String()) > 0 {
 				fmt.Printf("=== Generating JWT token with secret === \"%s\" \n", secretFlag.Value.String())
-
-				if signingMethod.Value.String() == "HS256" {
-					symmetric, token := pkg.GenerateSymmetric(secretFlag.Value.String(), claimMap, jwt.SigningMethodHS256)
-					fmt.Printf("%s \n", pkg.HeaderToString(token))
-					fmt.Println(symmetric)
-				}
-
-				if signingMethod.Value.String() == "HS384" {
-					symmetric, token := pkg.GenerateSymmetric(secretFlag.Value.String(), claimMap, jwt.SigningMethodHS384)
-					fmt.Printf("%s \n", pkg.HeaderToString(token))
-					fmt.Println(symmetric)
-				}
-
+				genSymmetric(signingMethod.Value.String(), secretFlag.Value.String(), claimMap)
 				return
 			}
 
 			fmt.Println("=== Generating Simple Token ===")
-
-			if signingMethod.Value.String() == "HS256" {
-				signedString, token := pkg.GenerateSimple(claimMap, jwt.SigningMethodHS256)
-				fmt.Printf("%s \n", pkg.HeaderToString(token))
-				fmt.Printf("Signed string: \n%s\n", signedString)
-			}
-
-			if signingMethod.Value.String() == "HS384" {
-				signedString, token := pkg.GenerateSimple(claimMap, jwt.SigningMethodHS384)
-				fmt.Printf("%s \n", pkg.HeaderToString(token))
-				fmt.Printf("Signed string: \n%s\n", signedString)
-			}
-
-			if signingMethod.Value.String() == "HS512" {
-				signedString, token := pkg.GenerateSimple(claimMap, jwt.SigningMethodHS512)
-				fmt.Printf("%s \n", pkg.HeaderToString(token))
-				fmt.Printf("Signed string: \n%s\n", signedString)
-			}
+			genSimple(signingMethod.Value.String(), claimMap)
 		},
 	}
 )
 
 func init() {
-	genJwtCmd.Flags().StringVarP(&TokenPath, "tokenpath", "t", "", "Token path")
-	genJwtCmd.Flags().StringVarP(&TokenName, "tokenname", "n", "", "Token name")
 	genJwtCmd.Flags().StringVarP(&Secret, "secret", "s", "", "hash input key")
 	genJwtCmd.Flags().StringToString("claims", nil, "key=value pairs, separated by comma")
-	genJwtCmd.Flags().StringVarP(&signingMethod, "signingmethod", "m", "HS256", "signing method")
+	genJwtCmd.Flags().StringVarP(&signingMethod, "signingmethod", "m", "HS256",
+		"signing method HS256 | HS384 | HS512")
+	genJwtCmd.Flags().StringVarP(&PrivateKey, "privatekey", "p", "", "private key")
+}
+
+func genSimple(smethod string, claimMap map[string]string) {
+	var signedString string
+	var token *jwt.Token
+
+	switch smethod {
+	case "HS256":
+		signedString, token = pkg.GenerateSimple(claimMap, jwt.SigningMethodHS256)
+	case "HS384":
+		signedString, token = pkg.GenerateSimple(claimMap, jwt.SigningMethodHS384)
+	case "HS512":
+		signedString, token = pkg.GenerateSimple(claimMap, jwt.SigningMethodHS512)
+	default:
+		fmt.Println("Error: Invalid signing method")
+		fmt.Println("Valid signing methods are: HS256, HS384, HS512")
+		return
+	}
+
+	fmt.Printf("%s \n", pkg.HeaderToString(token))
+	fmt.Printf("Signed string: \n%s\n", signedString)
+}
+
+func genSymmetric(smethod string, secret string, claimMap map[string]string) {
+	var signedString string
+	var token *jwt.Token
+
+	switch smethod {
+	case "HS256":
+		signedString, token = pkg.GenerateSymmetric(secret, claimMap, jwt.SigningMethodHS256)
+	case "HS384":
+		signedString, token = pkg.GenerateSymmetric(secret, claimMap, jwt.SigningMethodHS384)
+	case "HS512":
+		signedString, token = pkg.GenerateSymmetric(secret, claimMap, jwt.SigningMethodHS512)
+	default:
+		fmt.Println("Error: Invalid signing method")
+		fmt.Println("Valid signing methods are: HS256, HS384, HS512")
+		return
+	}
+
+	fmt.Printf("%s \n", pkg.HeaderToString(token))
+	fmt.Printf("Signed string: \n%s\n", signedString)
+}
+
+func genAsymmetric(privateKeyString string, claimMap map[string]string) {
+	var signedString string
+	//var token *jwt.Token
+
+	pemBlock := pkg.DecodePrivatePemFromFile(privateKeyString)
+	rsa := pkg.UnmarshalPrivateRsa(pemBlock)
+	signedString = pkg.GenerateSigned(claimMap, rsa)
+
+	//fmt.Printf("%s \n", pkg.HeaderToString(token))
+	fmt.Printf("Signed string: \n%s\n", signedString)
 }

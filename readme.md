@@ -9,7 +9,7 @@ You can also generate public and private key for testing purposes.
 ```
 
 ### Generate Public/Private Key
-`genkeys` will generate private and public key to stdout.
+`genkeys` will generate private and public key to `stdout`.
 
 Flags
 ```
@@ -84,7 +84,7 @@ Change the signing method
 ## Encode JWT
 
 ```shell
-./jwt encode '{"sub":"1234567890","name":"John Doe","admin":true}' AllYourBase
+./jwt encode --secret test '{"sub":"1234567890","name":"John Doe","admin":true}'
 ```
 
 

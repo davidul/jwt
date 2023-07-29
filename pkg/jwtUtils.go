@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"crypto/rsa"
 	"encoding/json"
 	"fmt"
 	"github.com/golang-jwt/jwt"
@@ -81,23 +82,14 @@ func GenerateSymmetric(secretKey string, claims map[string]string, signingMethod
 	return signedString, token
 }
 
-func GenerateSigned(claims map[string]string) string {
+func GenerateSigned(claims map[string]string, privateKey *rsa.PrivateKey) string {
 	toMapClaims := StandardClaimsToMapClaims(sampleStandardClaims())
 	for k, v := range claims {
 		toMapClaims[k] = v
 	}
 
-	//privateKey, _ := cmd.PrivateAndPublicKeyInMemory()
-	private, public := GenKeysRsa()
-	fmt.Println("Private and public keys")
-	fmt.Println(private)
-	fmt.Println(public)
 	jwtWithClaims := jwt.NewWithClaims(jwt.SigningMethodRS512, toMapClaims)
-	//fromPEM, err := jwt.ParseRSAPrivateKeyFromPEM(privateKey)
-	//if err != nil {
-	//	panic(err)
-	//}
-	signedString, err := jwtWithClaims.SignedString(private)
+	signedString, err := jwtWithClaims.SignedString(privateKey)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -114,6 +106,30 @@ func Parse(tokenString string, secret string) *jwt.Token {
 	}
 
 	return parse
+}
+
+func ParseWithPublicKeyFile(tokenString string, publicKeyPath string) *jwt.Token {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		pemBlock := DecodePublicPemFromFile(publicKeyPath)
+		publicRsa := UnmarshalPublicRsa(pemBlock)
+		return publicRsa, nil
+	})
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	return token
+}
+
+func ParseWithPublicKey(tokenString string, publicKey *rsa.PublicKey) *jwt.Token {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return publicKey, nil
+	})
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	return token
 }
 
 func HeaderToString(token *jwt.Token) string {
