@@ -12,6 +12,22 @@ import (
 	"path"
 )
 
+type KeyType string
+
+const (
+	RsaPrivateKey   KeyType = "RSA PRIVATE KEY"
+	RsaPublicKey    KeyType = "RSA PUBLIC KEY"
+	EcdsaPrivateKey KeyType = "EC PRIVATE KEY"
+	EcdsaPublicKey  KeyType = "EC PUBLIC KEY"
+)
+
+type BlockType string
+
+const (
+	RSA   BlockType = "rsa"
+	ECDSA BlockType = "ecdsa"
+)
+
 func GenKeysEcdsa() (*ecdsa.PrivateKey, *ecdsa.PublicKey) {
 	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	if err != nil {
@@ -57,9 +73,17 @@ func MarshalEcdsa(privateKey *ecdsa.PrivateKey, publicKey *ecdsa.PublicKey) ([]b
 }
 
 // encode PEM to memory
-func EncodePem(mPrivateKey []byte, mPublicKey []byte) ([]byte, []byte) {
-	privateBlock := &pem.Block{Type: "RSA PRIVATE KEY", Bytes: mPrivateKey}
-	publicBlock := &pem.Block{Type: "RSA PUBLIC KEY", Bytes: mPublicKey}
+func EncodePem(mPrivateKey []byte, mPublicKey []byte, blockType BlockType) ([]byte, []byte) {
+	var privateBlock *pem.Block
+	var publicBlock *pem.Block
+	switch blockType {
+	case RSA:
+		privateBlock = &pem.Block{Type: string(RsaPrivateKey), Bytes: mPrivateKey}
+		publicBlock = &pem.Block{Type: string(RsaPublicKey), Bytes: mPublicKey}
+	case ECDSA:
+		privateBlock = &pem.Block{Type: string(EcdsaPrivateKey), Bytes: mPrivateKey}
+		publicBlock = &pem.Block{Type: string(EcdsaPublicKey), Bytes: mPublicKey}
+	}
 
 	memoryPrivate := pem.EncodeToMemory(privateBlock)
 	memoryPublic := pem.EncodeToMemory(publicBlock)
@@ -67,13 +91,26 @@ func EncodePem(mPrivateKey []byte, mPublicKey []byte) ([]byte, []byte) {
 	return memoryPrivate, memoryPublic
 }
 
-func EncodePublicKeyToPemFile(publicKey []byte, filePath string, fileName string) {
-	publicBlock := &pem.Block{Type: "RSA PUBLIC KEY", Bytes: publicKey}
+func EncodePublicKeyToPemFile(publicKey []byte, filePath string, fileName string, blockType BlockType) {
+	var publicBlock *pem.Block
+	switch blockType {
+	case RSA:
+		publicBlock = &pem.Block{Type: string(RsaPublicKey), Bytes: publicKey}
+	case ECDSA:
+		publicBlock = &pem.Block{Type: string(EcdsaPublicKey), Bytes: publicKey}
+	}
+
 	EncodePemFile(publicBlock, path.Join(filePath, fileName))
 }
 
-func EncodePrivateKeyToPemFile(privateKey []byte, filePath string, fileName string) {
-	privateBlock := &pem.Block{Type: "RSA PRIVATE KEY", Bytes: privateKey}
+func EncodePrivateKeyToPemFile(privateKey []byte, filePath string, fileName string, blockType BlockType) {
+	var privateBlock *pem.Block
+	switch blockType {
+	case RSA:
+		privateBlock = &pem.Block{Type: string(RsaPrivateKey), Bytes: privateKey}
+	case ECDSA:
+		privateBlock = &pem.Block{Type: string(EcdsaPrivateKey), Bytes: privateKey}
+	}
 	EncodePemFile(privateBlock, path.Join(filePath, fileName))
 }
 

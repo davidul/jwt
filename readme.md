@@ -8,41 +8,7 @@ You can also generate public and private key for testing purposes.
 ./jwt help
 ```
 
-### Generate Public/Private Key
-`genkeys` will generate private and public key to `stdout`.
-
-Flags
-```
---keypath string   path to directory where keys will be stored (default ".")
---privatekey string   private key file name (default "private.pem")
---publickey string   public key file name (default "public.pem")
-
-```
-
-```shell
-jwt genkeys
-```
-Will generate private and public key to stdout.
-
-Specify file path, this will generate `private.pem` and `public.pem` in current directory.
-```shell
-jwt genkeys --keypath .
-```
-
-Verify keys
-```shell
-openssl rsa -in path/to/rsa_key.pem -text -noout
-```
-
-Specify file name
-```shell
-./jwt genkeys --keypath . --privatekey pk --publickey puk
-```
-
-This will generate private and public key in current directory.
-These keys can be used for signing and verifying JWT (testing purposes only).
-
-## Generate Sample token
+### Generate Sample token
 
 `gen` command will generate sample token.
 ```shell
@@ -81,14 +47,49 @@ Change the signing method
 ./jwt gen --signingmethod HS384
 ```
 
-## Encode JWT
+### Generate Public/Private Key
+`genkeys` will generate private and public key to `stdout`.
+
+Flags
+```
+--keypath string   path to directory where keys will be stored (default ".")
+--privatekey string   private key file name (default "private.pem")
+--publickey string   public key file name (default "public.pem")
+
+```
+
+```shell
+jwt genkeys
+```
+Will generate private and public key to stdout.
+
+Specify file path, this will generate `private.pem` and `public.pem` in current directory.
+```shell
+jwt genkeys --keypath .
+```
+
+Verify keys
+```shell
+openssl rsa -in path/to/rsa_key.pem -text -noout
+```
+
+Specify file name
+```shell
+./jwt genkeys --keypath . --privatekey pk --publickey puk
+```
+
+This will generate private and public key in current directory.
+These keys can be used for signing and verifying JWT (testing purposes only).
+
+
+### Encode JWT
 
 ```shell
 ./jwt encode --secret test '{"sub":"1234567890","name":"John Doe","admin":true}'
 ```
 
 
-## Decode JWT
+### Decode JWT
 
 ```shell
 ./jwt decode eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhdWQiLCJleHAiOjE3MjIxNTIxNjgsImlhdCI6MTY5MDM1Njk2OCwiaXNzIjoiaXNzIiwibmJmIjoxNjkwNDQzMzY4LCJzdWIiOiJzdWIifQ._1L7ZTk4QpybaCk4rx2pgTwl1cGaRl8W9AUH_T3TfT0 AllYourBase

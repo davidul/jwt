@@ -59,18 +59,18 @@ var (
 				privateKey, publicKey := pkg.GenKeysRsa()
 				bPrivateKey, bPublicKey := pkg.MarshalRsa(privateKey, publicKey)
 				if strOutput == "stdout" {
-					pr, pu := pkg.EncodePem(bPrivateKey, bPublicKey)
+					pr, pu := pkg.EncodePem(bPrivateKey, bPublicKey, pkg.RSA)
 					fmt.Println(string(pr))
 					fmt.Println(string(pu))
 				} else {
-					pkg.EncodePrivateKeyToPemFile(bPrivateKey, keyPath.Value.String(), strPrivateKeyName)
-					pkg.EncodePublicKeyToPemFile(bPublicKey, keyPath.Value.String(), strPublicKeyName)
+					pkg.EncodePrivateKeyToPemFile(bPrivateKey, keyPath.Value.String(), strPrivateKeyName, pkg.RSA)
+					pkg.EncodePublicKeyToPemFile(bPublicKey, keyPath.Value.String(), strPublicKeyName, pkg.RSA)
 				}
 			} else if strKeyTypeName == "ecdsa" {
 				privateKey, publicKey := pkg.GenKeysEcdsa()
 				bPrivateKey, bPublicKey := pkg.MarshalEcdsa(privateKey, publicKey)
 				if strOutput == "stdout" {
-					pr, pu := pkg.EncodePem(bPrivateKey, bPublicKey)
+					pr, pu := pkg.EncodePem(bPrivateKey, bPublicKey, pkg.ECDSA)
 					fmt.Println(string(pr))
 					fmt.Println(string(pu))
 				} else {
@@ -84,6 +84,6 @@ func init() {
 	genPkCmd.Flags().StringVarP(&KeyPath, "keypath", "k", "", "target directory")
 	genPkCmd.Flags().StringVarP(&PrivateKeyName, "privatekey", "n", "", "file name")
 	genPkCmd.Flags().StringVarP(&PublicKeyName, "publickey", "p", "", "file name")
-	genPkCmd.Flags().StringVarP(&KeyType, "keytype", "t", "rsa", "key type")
+	genPkCmd.Flags().StringVarP(&KeyType, "keytype", "t", "rsa", "key type rsa | ecdsa, default rsa")
 	genPkCmd.Flags().StringVarP(&Output, "output", "o", "", "output file or stdout")
 }

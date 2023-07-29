@@ -40,7 +40,7 @@ func TestMarshalEcdsa(t *testing.T) {
 func TestEncodePem(t *testing.T) {
 	privateKey, publicKey := GenKeysEcdsa()
 	mPrivateKey, mPublicKey := MarshalEcdsa(privateKey, publicKey)
-	ePrivateKey, ePublicKey := EncodePem(mPrivateKey, mPublicKey)
+	ePrivateKey, ePublicKey := EncodePem(mPrivateKey, mPublicKey, ECDSA)
 	assert.NotNil(t, ePrivateKey)
 	assert.NotNil(t, ePublicKey)
 }
@@ -48,7 +48,7 @@ func TestEncodePem(t *testing.T) {
 func TestEncodePemToFile(t *testing.T) {
 	privateKey, publicKey := GenKeysEcdsa()
 	mPrivateKey, mPublicKey := MarshalEcdsa(privateKey, publicKey)
-	ePrivateKey, ePublicKey := EncodePem(mPrivateKey, mPublicKey)
+	ePrivateKey, ePublicKey := EncodePem(mPrivateKey, mPublicKey, ECDSA)
 	EncodePemToFile(ePrivateKey, ePublicKey, "", "")
 	assert.NotNil(t, ePrivateKey)
 	assert.NotNil(t, ePublicKey)
@@ -80,16 +80,20 @@ func TestEncodePemToFile(t *testing.T) {
 func TestDecodePem(t *testing.T) {
 	privateKey, publicKey := GenKeysEcdsa()
 	mPrivateKey, mPublicKey := MarshalEcdsa(privateKey, publicKey)
-	ePrivateKey, ePublicKey := EncodePem(mPrivateKey, mPublicKey)
+	ePrivateKey, ePublicKey := EncodePem(mPrivateKey, mPublicKey, ECDSA)
 	EncodePemToFile(ePrivateKey, ePublicKey, "", "")
 	dPublicKey := DecodePublicPemFromFile("public.pem")
 	assert.NotNil(t, dPublicKey)
+	err := os.Remove(path.Join("", "public.pem"))
+	assert.Nil(t, err)
+	err = os.Remove(path.Join("", "private.pem"))
+	assert.Nil(t, err)
 }
 
 func TestDecodePemFromFile(t *testing.T) {
 	privateKey, publicKey := GenKeysEcdsa()
 	mPrivateKey, mPublicKey := MarshalEcdsa(privateKey, publicKey)
-	ePrivateKey, ePublicKey := EncodePem(mPrivateKey, mPublicKey)
+	ePrivateKey, ePublicKey := EncodePem(mPrivateKey, mPublicKey, ECDSA)
 	EncodePemToFile(ePrivateKey, ePublicKey, "", "")
 	dPublicKey := DecodePublicPemFromFile("public.pem")
 	assert.NotNil(t, dPublicKey)
@@ -101,7 +105,7 @@ func TestDecodePemFromFile(t *testing.T) {
 func TestUnmarshalPublicRsa(t *testing.T) {
 	privateKey, publicKey := GenKeysRsa()
 	mPrivateKey, mPublicKey := MarshalRsa(privateKey, publicKey)
-	ePrivateKey, ePublicKey := EncodePem(mPrivateKey, mPublicKey)
+	ePrivateKey, ePublicKey := EncodePem(mPrivateKey, mPublicKey, RSA)
 	EncodePemToFile(ePrivateKey, ePublicKey, "", "")
 	dPublicKey := DecodePublicPemFromFile("public.pem")
 	assert.NotNil(t, dPublicKey)
