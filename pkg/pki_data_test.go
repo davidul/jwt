@@ -94,19 +94,21 @@ func TestDecodePemFromFile(t *testing.T) {
 	privateKey, publicKey := GenKeysEcdsa()
 	mPrivateKey, mPublicKey := MarshalEcdsa(privateKey, publicKey)
 	ePrivateKey, ePublicKey := EncodePem(mPrivateKey, mPublicKey, ECDSA)
-	EncodePemToFile(ePrivateKey, ePublicKey, "", "")
+	EncodePrivateKeyToPemFile(ePrivateKey, "", "private.pem", ECDSA)
+	EncodePublicKeyToPemFile(ePublicKey, "", "public.pem", ECDSA)
 	dPublicKey := DecodePublicPemFromFile("public.pem")
 	assert.NotNil(t, dPublicKey)
 
-	rsa := UnmarshalPublicRsa(dPublicKey)
-	assert.NotNil(t, rsa)
+	ecdsa := UnmarshalPublicEcdsa(dPublicKey)
+	assert.NotNil(t, ecdsa)
 }
 
 func TestUnmarshalPublicRsa(t *testing.T) {
 	privateKey, publicKey := GenKeysRsa()
 	mPrivateKey, mPublicKey := MarshalRsa(privateKey, publicKey)
 	ePrivateKey, ePublicKey := EncodePem(mPrivateKey, mPublicKey, RSA)
-	EncodePemToFile(ePrivateKey, ePublicKey, "", "")
+	EncodePrivateKeyToPemFile(ePrivateKey, "", "private.pem", RSA)
+	EncodePublicKeyToPemFile(ePublicKey, "", "public.pem", RSA)
 	dPublicKey := DecodePublicPemFromFile("public.pem")
 	assert.NotNil(t, dPublicKey)
 

@@ -18,7 +18,7 @@ const (
 	RsaPrivateKey   KeyType = "RSA PRIVATE KEY"
 	RsaPublicKey    KeyType = "RSA PUBLIC KEY"
 	EcdsaPrivateKey KeyType = "EC PRIVATE KEY"
-	EcdsaPublicKey  KeyType = "EC PUBLIC KEY"
+	EcdsaPublicKey  KeyType = "PUBLIC KEY"
 )
 
 type BlockType string
@@ -115,14 +115,8 @@ func EncodePrivateKeyToPemFile(privateKey []byte, filePath string, fileName stri
 }
 
 func EncodePemFile(pemBlock *pem.Block, fileName string) {
-	privateFile, err := os.Create(fileName)
+	err := os.WriteFile(fileName, pemBlock.Bytes, 0644)
 	if err != nil {
-		fmt.Println(err)
-	}
-
-	err = pem.Encode(privateFile, pemBlock)
-	if err != nil {
-		fmt.Println(err)
 		return
 	}
 }
@@ -191,6 +185,17 @@ func UnmarshalPublicRsa(publicPem *pem.Block) *rsa.PublicKey {
 
 	return publicKey
 }
+
+// unmarshal PEM to ECDSA keys
+func UnmarshalPublicEcdsa(publicPem *pem.Block) *ecdsa.PublicKey {
+	publicKey, err := x509.ParsePKIXPublicKey(publicPem.Bytes)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	return publicKey.(*ecdsa.PublicKey)
+}
+
 func UnmarshalPrivateRsa(privatePem *pem.Block) *rsa.PrivateKey {
 	privateKey, err := x509.ParsePKCS1PrivateKey(privatePem.Bytes)
 	if err != nil {

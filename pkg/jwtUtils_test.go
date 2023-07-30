@@ -40,7 +40,7 @@ func TestGenerateSymmetricWithCustomClaims(t *testing.T) {
 	assert.NotNil(t, token)
 	assert.Equal(t, token.Header["alg"], "HS256")
 	assert.Equal(t, token.Header["typ"], "JWT")
-	assert.Equal(t, token.Claims.(CustomMapClaims).CustomClaims["firstName"], "David")
+	assert.Equal(t, token.Claims.(jwt.MapClaims)["firstName"], "David")
 
 	parsedToken := Parse(symmetric, DEFAULT_SECRET)
 	assert.True(t, parsedToken.Valid)

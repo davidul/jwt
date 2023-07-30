@@ -55,6 +55,9 @@ func init() {
 	decodeCmd.Flags().String("publickey", "", "public key file path")
 }
 
+// output token to stdout
+// if outputType is text, output only header
+// if outputType is json, output header and claims
 func output(token *jwt.Token, outputType string) {
 	if outputType == "text" {
 		fmt.Println(pkg.HeaderToString(token))

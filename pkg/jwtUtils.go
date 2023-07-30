@@ -8,13 +8,14 @@ import (
 	"time"
 )
 
-var DEFAULT_SECRET = "AllYourBase"
+const DEFAULT_SECRET = "AllYourBase"
 
 type CustomMapClaims struct {
 	CustomClaims map[string]string
 	jwt.StandardClaims
 }
 
+// ToMapClaims converts map[string]string to jwt.MapClaims
 func ToMapClaims(claims map[string]string) jwt.MapClaims {
 	m := make(map[string]interface{})
 	for k, v := range claims {
@@ -24,6 +25,7 @@ func ToMapClaims(claims map[string]string) jwt.MapClaims {
 	return m
 }
 
+// StandardClaimsToMapClaims converts jwt.StandardClaims to jwt.MapClaims
 func StandardClaimsToMapClaims(claims jwt.StandardClaims) jwt.MapClaims {
 	m := make(map[string]interface{})
 	m["aud"] = claims.Audience
@@ -36,6 +38,8 @@ func StandardClaimsToMapClaims(claims jwt.StandardClaims) jwt.MapClaims {
 	return m
 }
 
+// sampleStandardClaims returns sample jwt.StandardClaims
+// populated with sample values
 func sampleStandardClaims() jwt.StandardClaims {
 	now := time.Now()
 	plusYear := now.AddDate(1, 0, 0)
@@ -52,21 +56,16 @@ func sampleStandardClaims() jwt.StandardClaims {
 	}
 }
 
+// GenerateSimple alias for GenerateSymmetric
 func GenerateSimple(claims map[string]string, signingMethod jwt.SigningMethod) (string, *jwt.Token) {
-	toMapClaims := StandardClaimsToMapClaims(sampleStandardClaims())
-	for k, v := range claims {
-		toMapClaims[k] = v
-	}
-
-	token := jwt.NewWithClaims(signingMethod, toMapClaims)
-	signingString, err := token.SignedString([]byte(DEFAULT_SECRET))
-	if err != nil {
-		panic(err)
-	}
-
-	return signingString, token
+	return GenerateSymmetric(DEFAULT_SECRET, claims, signingMethod)
 }
 
+// GenerateSymmetric generates simple token
+// sample claims are populated with sample values and
+// optional claims are added to sample claims.
+// Default secret is used if none provided.
+// returns signed string and token struct
 func GenerateSymmetric(secretKey string, claims map[string]string, signingMethod jwt.SigningMethod) (string, *jwt.Token) {
 	toMapClaims := StandardClaimsToMapClaims(sampleStandardClaims())
 	for k, v := range claims {
@@ -82,6 +81,7 @@ func GenerateSymmetric(secretKey string, claims map[string]string, signingMethod
 	return signedString, token
 }
 
+// GenerateSigned generates signed token with private key
 func GenerateSigned(claims map[string]string, privateKey *rsa.PrivateKey) string {
 	toMapClaims := StandardClaimsToMapClaims(sampleStandardClaims())
 	for k, v := range claims {
@@ -97,6 +97,8 @@ func GenerateSigned(claims map[string]string, privateKey *rsa.PrivateKey) string
 	return signedString
 }
 
+// Parse parses token string with secret.
+// Secret is optional, it is only for validation
 func Parse(tokenString string, secret string) *jwt.Token {
 	parse, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return []byte(secret), nil
