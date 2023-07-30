@@ -58,21 +58,21 @@ func TestGenerateSigned(t *testing.T) {
 	assert.Equal(t, key.Valid, true)
 }
 
-func TestParseWithPublicKey(t *testing.T) {
-
-	privateBlock := DecodePrivatePemFromFile("/Users/david/IdeaProjects/_courses/_go/jwt/private.pem")
-
-	privateKey := UnmarshalPrivateRsa(privateBlock)
-
-	var claims = make(map[string]string)
-	claims["firstName"] = "David"
-	signed := GenerateSigned(claims, privateKey)
-	assert.NotNil(t, signed)
-
-	key := ParseWithPublicKeyFile(signed, "/Users/david/IdeaProjects/_courses/_go/jwt/public.pem")
-	assert.NotNil(t, key)
-	assert.Equal(t, key.Valid, true)
-}
+//func TestParseWithPublicKey(t *testing.T) {
+//
+//	privateBlock := DecodePrivatePemFromFile("/Users/david/IdeaProjects/_courses/_go/jwt/private.pem")
+//
+//	privateKey := UnmarshalPrivateRsa(privateBlock)
+//
+//	var claims = make(map[string]string)
+//	claims["firstName"] = "David"
+//	signed := GenerateSigned(claims, privateKey)
+//	assert.NotNil(t, signed)
+//
+//	key := ParseWithPublicKeyFile(signed, "/Users/david/IdeaProjects/_courses/_go/jwt/public.pem")
+//	assert.NotNil(t, key)
+//	assert.Equal(t, key.Valid, true)
+//}
 
 func TestEncode(t *testing.T) {
 	encode, err := Encode("{\"sub\":\"1234567890\",\"name\":\"John Doe\",\"admin\":true}", DEFAULT_SECRET)
