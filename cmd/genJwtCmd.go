@@ -27,7 +27,7 @@ var (
 			privateKeyString := cmd.Flag("privatekey").Value.String()
 
 			if privateKeyString != "" {
-				fmt.Println("=== Generating JWT token with private key ===")
+				fmt.Fprintln(cmd.OutOrStderr(), "=== Generating JWT token with private key ===")
 				genAsymmetric(privateKeyString, claimMap)
 				return
 			}
@@ -36,13 +36,13 @@ var (
 			}
 
 			if secretFlag != nil && len(secretFlag.Value.String()) > 0 {
-				fmt.Printf("=== Generating JWT token with secret === \"%s\" \n", secretFlag.Value.String())
+				fmt.Fprintln(cmd.OutOrStderr(), "=== Generating JWT token with secret === \n", secretFlag.Value.String())
 				genSymmetric(signingMethod.Value.String(), secretFlag.Value.String(), claimMap)
 				return
 			}
 
-			fmt.Println("=== Generating Simple Token ===")
-			genSimple(signingMethod.Value.String(), claimMap)
+			fmt.Fprintln(cmd.OutOrStderr(), "=== Generating Simple Token ===")
+			fmt.Fprintln(cmd.OutOrStderr(), genSimple(signingMethod.Value.String(), claimMap))
 		},
 	}
 )
@@ -55,7 +55,7 @@ func init() {
 	genJwtCmd.Flags().StringVarP(&PrivateKey, "privatekey", "p", "", "private key")
 }
 
-func genSimple(smethod string, claimMap map[string]string) {
+func genSimple(smethod string, claimMap map[string]string) string {
 	var signedString string
 	var token *jwt.Token
 
@@ -67,13 +67,10 @@ func genSimple(smethod string, claimMap map[string]string) {
 	case "HS512":
 		signedString, token = pkg.GenerateSimple(claimMap, jwt.SigningMethodHS512)
 	default:
-		fmt.Println("Error: Invalid signing method")
-		fmt.Println("Valid signing methods are: HS256, HS384, HS512")
-		return
+		return "Error: Invalid signing method \n Valid signing methods are: HS256, HS384, HS512"
 	}
 
-	fmt.Printf("%s \n", pkg.HeaderToString(token))
-	fmt.Printf("Signed string: \n%s\n", signedString)
+	return pkg.HeaderToString(token) + "\n Signed string: \n" + signedString
 }
 
 func genSymmetric(smethod string, secret string, claimMap map[string]string) {

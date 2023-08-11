@@ -8,6 +8,8 @@ import (
 	"jwt/pkg"
 )
 
+const ErrorNoToken = "Error: No token provided\n"
+
 var decodeCmd = &cobra.Command{
 	Use:   "decode token",
 	Short: "Decodes JWT token",
@@ -17,15 +19,17 @@ var decodeCmd = &cobra.Command{
 		"secret or public key is optional, it is used only for validation, not for decoding",
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
-			fmt.Println("Error: No token provided")
-			err := cmd.Help()
+			_, err := fmt.Fprintf(cmd.OutOrStderr(), ErrorNoToken)
+			if err != nil {
+				return
+			}
+
+			err = cmd.Help()
 			if err != nil {
 				return
 			}
 			return
 		}
-
-		//eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhdWQiLCJleHAiOjE3MjIxNzg5MjksImlhdCI6MTY5MDM4MzcyOSwiaXNzIjoiaXNzIiwibmJmIjoxNjkwNDcwMTI5LCJzdWIiOiJzdWIifQ.puww8DUW_MhVUUzEBUmJf-t7j0jnJlYcF3ftD2BmJLJINZpfnTAwdoeFf7y0n4Hd0nAO7QKql6XN0PqlIRdph8LQr-SR_WXNVUe_8trfmQA-Zxrp-M8WCLV8msgt8waDs6_uXmi1IJiOJVB2ryNs2tEZhwLztifGN1TCU8YU2sbkP9g_Yz7zOw6BFulWiv-am2eHbxMOQeE16-i3in_JpLqT-ypn6o5zNNiYKyVFGeDftKNXk5bQPnDmWg_5mwkZi1ybqGJdy6RsUGQ8PBMPGKsM7JCvrQw8DQEcDMMQ--nZLNtkqk0BHxM7VAG-Vgs7Hz2JFQLmFQKwXgHwRt_ojg
 
 		strOutput := cmd.Flag("output").Value.String()
 		if strOutput == "" {
@@ -43,8 +47,12 @@ var decodeCmd = &cobra.Command{
 			strSecret = pkg.DEFAULT_SECRET
 		}
 
-		parse := pkg.Parse(args[0], strSecret)
-		output(parse, strOutput)
+		parse, err := pkg.Parse(args[0], strSecret)
+		if err != nil {
+			fmt.Fprintln(cmd.OutOrStderr(), err)
+			return
+		}
+		fmt.Fprintln(cmd.OutOrStderr(), output(parse, strOutput))
 
 	},
 }
@@ -58,14 +66,12 @@ func init() {
 // output token to stdout
 // if outputType is text, output only header
 // if outputType is json, output header and claims
-func output(token *jwt.Token, outputType string) {
+func output(token *jwt.Token, outputType string) string {
 	if outputType == "text" {
-		fmt.Println(pkg.HeaderToString(token))
-		return
+		return pkg.HeaderToString(token)
 	} else {
 		marshal, _ := json.MarshalIndent(token.Header, "", "  ")
-		fmt.Println(string(marshal))
 		indent, _ := json.MarshalIndent(token.Claims, "", "  ")
-		fmt.Println(string(indent))
+		return string(marshal) + string(indent)
 	}
 }

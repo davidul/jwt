@@ -1,18 +1,28 @@
 package cmd
 
 import (
+	"bufio"
 	"fmt"
 	"github.com/spf13/cobra"
 	"jwt/pkg"
+	"os"
 )
 
 var SecretE string
 
 var encodeCmd = &cobra.Command{
-	Use:   "encode",
+	Use:   "encode token",
 	Short: "Encode JWT token",
-	Long:  "Encode JWT token, if secret is not provided, default secret is used",
+	Long: "Encode JWT token, if secret is not provided, default secret is used." +
+		"Pass the token on command line",
 	Run: func(cmd *cobra.Command, args []string) {
+		stat, _ := os.Stdin.Stat()
+		if stat.Mode()&os.ModeCharDevice == 0 {
+			fmt.Println("Piping in")
+			reader := bufio.NewReader(os.Stdin)
+			text, _ := reader.ReadString('\n')
+			fmt.Println(text)
+		}
 		secret := cmd.Flag("secret")
 		strSecret := cmd.Flag("secret").Value.String()
 		if strSecret == "" {
@@ -20,7 +30,7 @@ var encodeCmd = &cobra.Command{
 		}
 
 		if len(args) == 0 {
-			fmt.Println("Error: No token provided")
+			fmt.Fprintln(cmd.OutOrStderr(), "Error: No token provided")
 			return
 		}
 
@@ -29,8 +39,7 @@ var encodeCmd = &cobra.Command{
 		if err != nil {
 			fmt.Fprintln(cmd.OutOrStderr(), err)
 		}
-		fmt.Println(encode)
-		return
+		fmt.Fprintln(cmd.OutOrStderr(), encode)
 	},
 }
 

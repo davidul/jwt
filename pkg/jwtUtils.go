@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"bytes"
 	"crypto/rsa"
 	"encoding/json"
 	"fmt"
@@ -99,15 +100,15 @@ func GenerateSigned(claims map[string]string, privateKey *rsa.PrivateKey) string
 
 // Parse parses token string with secret.
 // Secret is optional, it is only for validation
-func Parse(tokenString string, secret string) *jwt.Token {
+func Parse(tokenString string, secret string) (*jwt.Token, error) {
 	parse, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return []byte(secret), nil
 	})
 	if err != nil {
-		fmt.Println(err)
+		return nil, err
 	}
 
-	return parse
+	return parse, nil
 }
 
 func ParseWithPublicKeyFile(tokenString string, publicKeyPath string) *jwt.Token {
@@ -136,18 +137,19 @@ func ParseWithPublicKey(tokenString string, publicKey *rsa.PublicKey) *jwt.Token
 
 func HeaderToString(token *jwt.Token) string {
 	header := token.Header
-	fmt.Println("Header")
+	const h = "Header\n"
+	var b bytes.Buffer
 	for k, v := range header {
-		fmt.Printf("\t%s : %s \n", k, v)
+		b.WriteString(fmt.Sprintf("\t%s : %s \n", k, v))
 	}
 
 	switch v := token.Claims.(type) {
 	case jwt.StandardClaims:
-		return StandardClaimsToString(v)
+		return h + b.String() + StandardClaimsToString(v)
 	case CustomMapClaims:
-		return CustomMapClaimsToString(v)
+		return h + b.String() + CustomMapClaimsToString(v)
 	case jwt.MapClaims:
-		MapClaimsToString(v)
+		return h + b.String() + MapClaimsToString(v)
 	}
 
 	return ""
@@ -177,34 +179,35 @@ func StandardClaimsToString(s jwt.StandardClaims) string {
 }
 
 func MapClaimsToString(s jwt.MapClaims) string {
+	var b bytes.Buffer
 	i := s["CustomClaims"]
 	if i != nil {
 		m := i.(map[string]interface{})
-		fmt.Printf("Custom Claims:\n")
+		b.WriteString("Custom Claims\n")
 		for k, v := range m {
-			fmt.Printf("\t%s : %s \n", k, v)
+			b.WriteString(fmt.Sprintf("\t%s : %s \n", k, v))
 		}
 	}
 
-	fmt.Printf("Standard Claims:\n")
+	b.WriteString("Standard Claims\n")
 	for k, v := range s {
 		if k != "CustomClaims" {
 			if k == "exp" || k == "iat" || k == "nbf" {
 				switch v.(type) {
 				case int64:
 					milli := time.UnixMilli(v.(int64))
-					fmt.Printf("\t%s : %s \n", k, milli.Format(time.RFC3339))
+					b.WriteString(fmt.Sprintf("\t%s : %s \n", k, milli.Format(time.RFC3339)))
 				case float64:
 					milli := time.UnixMilli(int64(v.(float64)))
-					fmt.Printf("\t%s : %s \n", k, milli.Format(time.RFC3339))
+					b.WriteString(fmt.Sprintf("\t%s : %s \n", k, milli.Format(time.RFC3339)))
 				}
 
 			} else {
-				fmt.Printf("\t%s : %s \n", k, v)
+				b.WriteString(fmt.Sprintf("\t%s : %s \n", k, v))
 			}
 		}
 	}
-	return ""
+	return b.String()
 }
 
 func Encode(data string, secret string) (string, error) {
