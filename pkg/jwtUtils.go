@@ -41,14 +41,21 @@ func StandardClaimsToMapClaims(claims jwt.StandardClaims) jwt.MapClaims {
 
 // sampleStandardClaims returns sample jwt.StandardClaims
 // populated with sample values
-func sampleStandardClaims() jwt.StandardClaims {
-	now := time.Now()
-	plusYear := now.AddDate(1, 0, 0)
+func sampleStandardClaims(fixed bool) jwt.StandardClaims {
+	var now time.Time
+	var expires time.Time
+	if fixed {
+		now = time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC)
+		expires = now.AddDate(100, 0, 0)
+	} else {
+		now = time.Now()
+		expires = now.AddDate(1, 0, 0)
+	}
 	minusDay := now.AddDate(0, 0, -1)
 	minus2days := now.AddDate(0, 0, -2)
 	return jwt.StandardClaims{
 		Audience:  "aud",
-		ExpiresAt: plusYear.Unix(),
+		ExpiresAt: expires.Unix(),
 		Id:        "1",
 		IssuedAt:  minus2days.Unix(),
 		Issuer:    "iss",
@@ -68,7 +75,7 @@ func GenerateSimple(claims map[string]string, signingMethod jwt.SigningMethod) (
 // Default secret is used if none provided.
 // returns signed string and token struct
 func GenerateSymmetric(secretKey string, claims map[string]string, signingMethod jwt.SigningMethod) (string, *jwt.Token) {
-	toMapClaims := StandardClaimsToMapClaims(sampleStandardClaims())
+	toMapClaims := StandardClaimsToMapClaims(sampleStandardClaims(true))
 	for k, v := range claims {
 		toMapClaims[k] = v
 	}
@@ -84,7 +91,7 @@ func GenerateSymmetric(secretKey string, claims map[string]string, signingMethod
 
 // GenerateSigned generates signed token with private key
 func GenerateSigned(claims map[string]string, privateKey *rsa.PrivateKey) string {
-	toMapClaims := StandardClaimsToMapClaims(sampleStandardClaims())
+	toMapClaims := StandardClaimsToMapClaims(sampleStandardClaims(true))
 	for k, v := range claims {
 		toMapClaims[k] = v
 	}
@@ -195,10 +202,10 @@ func MapClaimsToString(s jwt.MapClaims) string {
 			if k == "exp" || k == "iat" || k == "nbf" {
 				switch v.(type) {
 				case int64:
-					milli := time.UnixMilli(v.(int64))
+					milli := time.Unix(v.(int64), 0)
 					b.WriteString(fmt.Sprintf("\t%s : %s \n", k, milli.Format(time.RFC3339)))
 				case float64:
-					milli := time.UnixMilli(int64(v.(float64)))
+					milli := time.Unix(int64(v.(float64)), 0)
 					b.WriteString(fmt.Sprintf("\t%s : %s \n", k, milli.Format(time.RFC3339)))
 				}
 

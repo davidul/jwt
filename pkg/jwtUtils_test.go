@@ -91,7 +91,7 @@ func TestToMapClaims(t *testing.T) {
 }
 
 func TestStandardClaimsToMapClaims(t *testing.T) {
-	mapClaims := StandardClaimsToMapClaims(sampleStandardClaims())
+	mapClaims := StandardClaimsToMapClaims(sampleStandardClaims(true))
 	assert.NotNil(t, mapClaims)
 	assert.Equal(t, mapClaims["aud"], "aud")
 	assert.Equal(t, mapClaims["iss"], "iss")
