@@ -27,8 +27,8 @@ func TestDecodeCmdWithToken(t *testing.T) {
 	b := new(bytes.Buffer)
 	decodeCmd.SetOut(b)
 	decodeCmd.SetErr(b)
-	decodeCmd.Run(decodeCmd, []string{"eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhdWQiLCJleHAiOjE3MjIxNzg5MjksImlhdCI6MTY5MDM4MzcyOSwiaXNzIjoiaXNzIiwibmJmIjoxNjkwNDcwMTI5LCJzdWIiOiJzdWIifQ.puww8DUW_MhVUUzEBUmJf-t7j0jnJlYcF3ftD2BmJLJINZpfnTAwdoeFf7y0n4Hd0nAO7QKql6XN0PqlIRdph8LQr-SR_WXNVUe_8trfmQA-Zxrp-M8WCLV8msgt8waDs6_uXmi1IJiOJVB2ryNs2tEZhwLztifGN1TCU8YU2sbkP9g_Yz7zOw6BFulWiv-am2eHbxMOQeE16-i3in_JpLqT-ypn6o5zNNiYKyVFGeDftKNXk5bQPnDmWg_5mwkZi1ybqGJdy6RsUGQ8PBMPGKsM7JCvrQw8DQEcDMMQ--nZLNtkqk0BHxM7VAG-Vgs7Hz2JFQLmFQKwXgHwRt_ojg"})
-	assert.Equal(t, "{\n  \"alg\": \"RS512\",\n  \"typ\": \"JWT\"\n}{\n  \"aud\": \"aud\",\n  \"exp\": 1722178929,\n  \"iat\": 1690383729,\n  \"iss\": \"iss\",\n  \"nbf\": 1690470129,\n  \"sub\": \"sub\"\n}\n", b.String())
+	decodeCmd.Run(decodeCmd, []string{"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhdWQiLCJleHAiOjE3MjMzNzg0NjcsImlhdCI6MTY5MTU4MzI2NywiaXNzIjoiaXNzIiwibmJmIjoxNjkxNjY5NjY3LCJzdWIiOiJzdWIifQ.O_hh57if9NwiY_4qeviAXwDAh7IIvQdGuV4YWZ3qsmI"})
+	assert.Equal(t, "{\n  \"alg\": \"HS256\",\n  \"typ\": \"JWT\"\n}{\n  \"aud\": \"aud\",\n  \"exp\": 1723378467,\n  \"iat\": 1691583267,\n  \"iss\": \"iss\",\n  \"nbf\": 1691669667,\n  \"sub\": \"sub\"\n}\n", b.String())
 }
 
 func TestDecodeCmdBadToken(t *testing.T) {

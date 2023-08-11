@@ -42,7 +42,7 @@ func TestGenerateSymmetricWithCustomClaims(t *testing.T) {
 	assert.Equal(t, token.Header["typ"], "JWT")
 	assert.Equal(t, token.Claims.(jwt.MapClaims)["firstName"], "David")
 
-	parsedToken := Parse(symmetric, DEFAULT_SECRET)
+	parsedToken, _ := Parse(symmetric, DEFAULT_SECRET)
 	assert.True(t, parsedToken.Valid)
 
 }
