@@ -41,10 +41,10 @@ func StandardClaimsToMapClaims(claims jwt.StandardClaims) jwt.MapClaims {
 
 // sampleStandardClaims returns sample jwt.StandardClaims
 // populated with sample values
-func sampleStandardClaims(fixed bool) jwt.StandardClaims {
+func sampleStandardClaims(fixedTime bool) jwt.StandardClaims {
 	var now time.Time
 	var expires time.Time
-	if fixed {
+	if fixedTime {
 		now = time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC)
 		expires = now.AddDate(100, 0, 0)
 	} else {
