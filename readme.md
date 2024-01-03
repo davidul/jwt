@@ -22,19 +22,16 @@ claims. Output looks like this
 Header
         typ : JWT 
         alg : HS256 
-Custom Claims
 Standard Claims
-         Id: 1 
-         Audience: Recipient
-         Issuer: Sample
-         Issued at: 1970-01-20T14:30:54+01:00
-         Not Before: 1970-01-20T14:32:20+01:00
-         Expires at: 1970-01-20T23:20:49+01:00
- 
-Signed string: 
-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
-.eyJDdXN0b21DbGFpbXMiOnt9LCJhdWQiOiJSZWNpcGllbnQiLCJleHAiOjE3MjIwNDkzMzUsImp0aSI6IjEiLCJpYXQiOjE2OTAyNTQxMzUsImlzcyI6IlNhbXBsZSIsIm5iZiI6MTY5MDM0MDUzNSwic3ViIjoiVXNlciJ9
-.XSNQLGX6Gfdk_PToao9KBrHAC7aWBeqjaT3zDwWrfR4
+        iss : iss 
+        nbf : 2018-12-31T01:00:00+01:00 
+        sub : sub 
+        aud : aud 
+        exp : 2020-01-01T01:00:00+01:00 
+        iat : 2018-12-30T01:00:00+01:00 
+
+ Signed string: 
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhdWQiLCJleHAiOjE1Nzc4MzY4MDAsImlhdCI6MTU0NjEyODAwMCwiaXNzIjoiaXNzIiwibmJmIjoxNTQ2MjE0NDAwLCJzdWIiOiJzdWIifQ.vE5HikL25S3CUEuOEE9_GhcOtaXTsS5PSURVeR880iM
 ```
 Default secret is `AllYourBase`
 You can change the secret with `--secret` flag.
@@ -46,6 +43,12 @@ Change the signing method
 ```shell
 ./jwt gen --signingmethod HS384
 ```
+
+Possible signing methods are
+```
+HS256 | HS384 | HS512 (default "HS256")
+```
+
 
 ### Generate Public/Private Key
 `genkeys` will generate private and public key to `stdout`.
