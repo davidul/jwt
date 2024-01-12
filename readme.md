@@ -91,6 +91,23 @@ These keys can be used for signing and verifying JWT (testing purposes only).
 ./jwt encode --secret test '{"sub":"1234567890","name":"John Doe","admin":true}'
 ```
 
+Store JWT in file
+```shell
+./jwt encode -f jwt.json '{"sub":"1234567890","name":"John Doe","admin":true}' 
+```
+
+You can also specify a key within the file
+```shell
+./jwt encode -f jwt.json -k sample2 '{"sub":"1234567890","name":"John Doe","admin":true}'
+```
+
+The file structure is
+```json
+{
+	"sample2": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbiI6dHJ1ZSwibmFtZSI6IkpvaG4gRG9lIiwic3ViIjoiMTIzNDU2Nzg5MCJ9.tmEp2UgCbOCUSTedc2Ce2HGmIFv7v36g9lM7nstNz8k"
+}
+```
+
 
 ### Decode JWT
 
