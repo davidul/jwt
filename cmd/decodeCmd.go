@@ -19,7 +19,7 @@ var decodeCmd = &cobra.Command{
 		"secret or public key is optional, it is used only for validation, not for decoding",
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
-			_, err := fmt.Fprintf(cmd.OutOrStderr(), ErrorNoToken)
+			_, err := fmt.Fprint(cmd.OutOrStderr(), ErrorNoToken)
 			if err != nil {
 				return
 			}

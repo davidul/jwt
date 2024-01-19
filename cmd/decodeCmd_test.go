@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -19,7 +20,11 @@ func TestDecodeCmdNoToken(t *testing.T) {
 	h := new(bytes.Buffer)
 	decodeCmd.SetOut(h)
 	decodeCmd.SetErr(h)
-	decodeCmd.Help()
+	err := decodeCmd.Help()
+	if err != nil {
+		fmt.Print(err)
+		return
+	}
 	assert.Equal(t, ErrorNoToken+h.String(), b.String())
 }
 
