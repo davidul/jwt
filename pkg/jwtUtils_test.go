@@ -96,7 +96,7 @@ func TestStandardClaimsToMapClaims(t *testing.T) {
 	assert.Equal(t, mapClaims["aud"], "aud")
 	assert.Equal(t, mapClaims["iss"], "iss")
 	assert.Equal(t, mapClaims["sub"], "sub")
-	//assert.Equal(t, mapClaims["exp"], float64(0))
-	//assert.Equal(t, mapClaims["iat"], float64(0))
-	//assert.Equal(t, mapClaims["nbf"], float64(0))
+	assert.Equal(t, mapClaims["exp"], int64(4701974400))
+	assert.Equal(t, mapClaims["iat"], int64(1546128000))
+	assert.Equal(t, mapClaims["nbf"], int64(1546214400))
 }

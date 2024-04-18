@@ -230,3 +230,16 @@ func Encode(data string, secret string) (string, error) {
 
 	return signingString, err
 }
+
+// output token to stdout
+// if outputType is text, output only header
+// if outputType is json, output header and claims
+func PrintJWT(token *jwt.Token, outputType string) string {
+	if outputType == "text" {
+		return HeaderToString(token)
+	} else {
+		marshal, _ := json.MarshalIndent(token.Header, "", "  ")
+		indent, _ := json.MarshalIndent(token.Claims, "", "  ")
+		return string(marshal) + string(indent)
+	}
+}

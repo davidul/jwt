@@ -213,8 +213,14 @@ func Ecd() {
 
 	publicKey := privateKey.PublicKey
 	mPrivateKey, err := x509.MarshalECPrivateKey(privateKey)
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	mPublicKey, err := x509.MarshalPKIXPublicKey(&publicKey)
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	privateBlock := &pem.Block{Type: "PRIVATE KEY", Bytes: mPrivateKey}
 	publicBlock := &pem.Block{Type: "PUBLIC KEY", Bytes: mPublicKey}
@@ -222,6 +228,19 @@ func Ecd() {
 	pem.EncodeToMemory(publicBlock)
 
 	file, err := os.Create("path")
-	pem.Encode(file, privateBlock)
-	pem.Encode(file, publicBlock)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = pem.Encode(file, privateBlock)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	err = pem.Encode(file, publicBlock)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 }
