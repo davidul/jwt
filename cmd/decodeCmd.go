@@ -57,6 +57,6 @@ var decodeCmd = &cobra.Command{
 
 func init() {
 	decodeCmd.Flags().String("secret", "", "optional secret key")
-	decodeCmd.Flags().String("PrintJWT", "", "PrintJWT format json or text")
+	decodeCmd.Flags().String("output", "", "PrintJWT format json or text")
 	decodeCmd.Flags().String("publickey", "", "public key file path")
 }
