@@ -26,6 +26,11 @@ func Exec() {
 				logger.Info("Missing jwt", zap.Int("bytes", write))
 				return
 			}
+
+			if secret == "" {
+				secret = pkg.DEFAULT_SECRET
+			}
+
 			logger.Info("Decoding jwt", zap.String("jwt", jwt))
 			parse, err := pkg.Parse(jwt, secret)
 			if err != nil {
@@ -39,7 +44,8 @@ func Exec() {
 			}
 			writer.WriteHeader(200)
 			writer.Header().Set("Content-Type", "application/json")
-			write, err := writer.Write([]byte(parse.Raw))
+			printJWT := pkg.PrintJWT(parse, "json")
+			write, err := writer.Write([]byte(printJWT))
 			if err != nil {
 				return
 			}
