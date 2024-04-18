@@ -1,0 +1,6 @@
+FROM golang:1.20-alpine AS builder
+
+WORKDIR /app
+COPY . .
+RUN go build -v -o /app/bin/ ./...
+RUN go test -v ./...
