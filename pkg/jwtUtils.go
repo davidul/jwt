@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/golang-jwt/jwt"
+	"go.uber.org/zap"
 	"time"
 )
 
@@ -16,8 +17,11 @@ type CustomMapClaims struct {
 	jwt.StandardClaims
 }
 
+var logger = zap.L()
+
 // ToMapClaims converts map[string]string to jwt.MapClaims
 func ToMapClaims(claims map[string]string) jwt.MapClaims {
+	logger.Info("Converting claims to map claims")
 	m := make(map[string]interface{})
 	for k, v := range claims {
 		m[k] = v
@@ -108,10 +112,12 @@ func GenerateSigned(claims map[string]string, privateKey *rsa.PrivateKey) string
 // Parse parses token string with secret.
 // Secret is optional, it is only for validation
 func Parse(tokenString string, secret string) (*jwt.Token, error) {
+	logger.Info("Parsing token")
 	parse, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return []byte(secret), nil
 	})
 	if err != nil {
+		logger.Error("Error parsing token", zap.Error(err))
 		return nil, err
 	}
 

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 )
 
 var dateFormat string
@@ -11,7 +12,10 @@ var rootCmd = &cobra.Command{
 	Long:  "CLI utility to generate and sign the JWT tokens",
 }
 
-func Execute() error {
+var Logger *zap.Logger
+
+func Execute(logger *zap.Logger) error {
+	Logger = logger
 	return rootCmd.Execute()
 }
 
