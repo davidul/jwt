@@ -109,34 +109,6 @@ func GenerateSigned(claims map[string]string, privateKey *rsa.PrivateKey) string
 	return signedString
 }
 
-// Parse parses token string with secret.
-// Secret is optional, it is only for validation
-func Parse(tokenString string, secret string) (*jwt.Token, error) {
-	logger.Info("Parsing token")
-	parse, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return []byte(secret), nil
-	})
-	if err != nil {
-		logger.Error("Error parsing token", zap.Error(err))
-		return nil, err
-	}
-
-	return parse, nil
-}
-
-func ParseWithPublicKeyFile(tokenString string, publicKeyPath string) *jwt.Token {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		pemBlock := DecodePublicPemFromFile(publicKeyPath)
-		publicRsa := UnmarshalPublicRsa(pemBlock)
-		return publicRsa, nil
-	})
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	return token
-}
-
 func ParseWithPublicKey(tokenString string, publicKey *rsa.PublicKey) *jwt.Token {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return publicKey, nil
