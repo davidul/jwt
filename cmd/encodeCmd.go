@@ -18,8 +18,9 @@ var key string
 var encodeCmd = &cobra.Command{
 	Use:   "encode token",
 	Short: "Encode JWT token",
-	Long: "Encode JWT token, if secret is not provided, default secret is used." +
+	Long: "Encode JWT token, if secret is not provided, default secret is used. " +
 		"Pass the token on command line",
+	Example: "./jwt encode --secret test '{\"sub\":\"1234567890\",\"name\":\"John Doe\",\"admin\":true}'",
 	Run: func(cmd *cobra.Command, args []string) {
 		stat, _ := os.Stdin.Stat()
 		if stat.Mode()&os.ModeCharDevice == 0 {
@@ -28,23 +29,28 @@ var encodeCmd = &cobra.Command{
 			text, _ := reader.ReadString('\n')
 			fmt.Println(text)
 		}
-		secret := cmd.Flag("secret")
-		strSecret := cmd.Flag("secret").Value.String()
-		if strSecret == "" {
-			strSecret = pkg.DEFAULT_SECRET
-		}
+		secret := secret(cmd)
 
 		if len(args) == 0 {
-			fmt.Fprintln(cmd.OutOrStderr(), "Error: No token provided")
+			_, err := fmt.Fprintln(cmd.OutOrStderr(), "Error: No token provided")
+			if err != nil {
+				return
+			}
 			return
 		}
 
-		fmt.Printf("=== Encoding JWT token with secret === \"%s\" \n", secret.Value.String())
-		encode, err := pkg.Encode(args[0], secret.Value.String())
+		fmt.Printf("=== Encoding JWT token with secret === \"%s\" \n", secret)
+		encode, err := pkg.Encode(args[0], secret)
 		if err != nil {
-			fmt.Fprintln(cmd.OutOrStderr(), err)
+			_, err := fmt.Fprintln(cmd.OutOrStderr(), err)
+			if err != nil {
+				return
+			}
 		}
-		fmt.Fprintln(cmd.OutOrStderr(), encode)
+		_, err = fmt.Fprintln(cmd.OutOrStderr(), encode)
+		if err != nil {
+			return
+		}
 
 		if file != "" {
 			fmt.Println("Writing to file")
@@ -62,17 +68,27 @@ var encodeCmd = &cobra.Command{
 			}
 
 			println(pkg.ToJSON())
-			werr := pkg.WriteToFile(file)
-			if werr != nil {
-				fmt.Println(werr)
+			err = pkg.WriteToFile(file)
+			if err != nil {
+				fmt.Println(err)
 				return
 			}
 		}
 	},
 }
 
+func secret(cmd *cobra.Command) string {
+	strSecret := cmd.Flag("secret").Value.String()
+	if strSecret == "" {
+		strSecret = pkg.DEFAULT_SECRET
+	}
+	return strSecret
+}
+
 func init() {
 	encodeCmd.Flags().StringVarP(&SecretE, "secret", "s", "", "secret key")
 	encodeCmd.Flags().StringVarP(&file, "file", "f", "", "file path")
 	encodeCmd.Flags().StringVarP(&key, "key", "k", "", "key")
+	encodeCmd.Flags().StringVarP(&signingMethod, "signingmethod", "m", "HS256",
+		"signing method HS256 | HS384 | HS512")
 }

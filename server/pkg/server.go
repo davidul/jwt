@@ -1,6 +1,8 @@
 package pkg
 
 import (
+	"errors"
+	"github.com/golang-jwt/jwt"
 	"go.uber.org/zap"
 	"jwt/pkg"
 	"net/http"
@@ -15,20 +17,17 @@ func Exec() {
 			//jwt, secret, public key
 			jwt := request.URL.Query().Get("jwt")
 			secret := request.URL.Query().Get("secret")
-			if jwt == "" {
-				logger.Error("Missing jwt")
-				writer.WriteHeader(400)
-				write, err := writer.Write([]byte("Missing jwt"))
-				if err != nil {
-					logger.Error("Error writing response", zap.Error(err))
-					return
-				}
-				logger.Info("Missing jwt", zap.Int("bytes", write))
-				return
-			}
-
 			if secret == "" {
 				secret = pkg.DEFAULT_SECRET
+			}
+			err := validateParams(jwt)
+			if err != nil {
+				writer.WriteHeader(400)
+				logger.Error("Error validating params", zap.Error(err))
+				_, err := writer.Write([]byte(err.Error()))
+				if err != nil {
+					return
+				}
 			}
 
 			logger.Info("Decoding jwt", zap.String("jwt", jwt))
@@ -42,14 +41,7 @@ func Exec() {
 				}
 				return
 			}
-			writer.WriteHeader(200)
-			writer.Header().Set("Content-Type", "application/json")
-			printJWT := pkg.PrintJWT(parse, "json")
-			write, err := writer.Write([]byte(printJWT))
-			if err != nil {
-				return
-			}
-			logger.Info("Decoded jwt", zap.Int("bytes", write))
+			jwtOk(writer, parse)
 		}
 	})
 
@@ -63,4 +55,22 @@ func Exec() {
 	if err != nil {
 		return
 	}
+}
+
+func validateParams(jwt string) error {
+	if jwt == "" {
+		return errors.New("missing jwt")
+	}
+	return nil
+}
+
+func jwtOk(writer http.ResponseWriter, parse *jwt.Token) {
+	writer.WriteHeader(200)
+	writer.Header().Set("Content-Type", "application/json")
+	printJWT := pkg.PrintJWT(parse, "json")
+	_, err := writer.Write([]byte(printJWT))
+	if err != nil {
+		return
+	}
+
 }
