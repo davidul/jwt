@@ -3,6 +3,7 @@ package cmd
 import (
 	"bufio"
 	"fmt"
+	"github.com/golang-jwt/jwt"
 	"github.com/spf13/cobra"
 	"io/fs"
 	"jwt/pkg"
@@ -14,6 +15,14 @@ var SecretE string
 var file string
 
 var key string
+
+type Encode struct {
+	secret           string
+	file             string
+	key              string
+	signingMethod    string
+	jwtSigningMethod jwt.SigningMethod
+}
 
 var encodeCmd = &cobra.Command{
 	Use:   "encode token",
@@ -29,7 +38,6 @@ var encodeCmd = &cobra.Command{
 			text, _ := reader.ReadString('\n')
 			fmt.Println(text)
 		}
-		secret := secret(cmd)
 
 		if len(args) == 0 {
 			_, err := fmt.Fprintln(cmd.OutOrStderr(), "Error: No token provided")
@@ -39,8 +47,14 @@ var encodeCmd = &cobra.Command{
 			return
 		}
 
-		fmt.Printf("=== Encoding JWT token with secret === \"%s\" \n", secret)
-		encode, err := pkg.Encode(args[0], secret)
+		e := NewEncode(cmd.Flag("secret").Value.String(),
+			cmd.Flag("file").Value.String(),
+			cmd.Flag("key").Value.String(),
+			cmd.Flag("signingmethod").Value.String(),
+		)
+
+		fmt.Printf("=== Encoding JWT token with secret === \"%s\" \n", e.secret)
+		encode, err := pkg.EncodeWithMethod(args[0], e.secret, e.jwtSigningMethod)
 		if err != nil {
 			_, err := fmt.Fprintln(cmd.OutOrStderr(), err)
 			if err != nil {
@@ -77,12 +91,32 @@ var encodeCmd = &cobra.Command{
 	},
 }
 
-func secret(cmd *cobra.Command) string {
-	strSecret := cmd.Flag("secret").Value.String()
-	if strSecret == "" {
-		strSecret = pkg.DEFAULT_SECRET
+func NewEncode(secret string, file string, key string, signingMethod string) *Encode {
+	e := &Encode{
+		secret:        secret,
+		file:          file,
+		key:           key,
+		signingMethod: signingMethod,
 	}
-	return strSecret
+
+	if secret == "" {
+		e.secret = pkg.DEFAULT_SECRET
+	}
+
+	if signingMethod == "" {
+		e.signingMethod = "HS256"
+	}
+	switch signingMethod {
+	case "HS256":
+		e.jwtSigningMethod = jwt.SigningMethodHS256
+	case "HS384":
+		e.jwtSigningMethod = jwt.SigningMethodHS384
+	case "HS512":
+		e.jwtSigningMethod = jwt.SigningMethodHS512
+	default:
+		e.jwtSigningMethod = jwt.SigningMethodHS256
+	}
+	return e
 }
 
 func init() {

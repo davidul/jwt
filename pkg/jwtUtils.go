@@ -209,6 +209,20 @@ func Encode(data string, secret string) (string, error) {
 	return signingString, err
 }
 
+func EncodeWithMethod(data string, secret string, method jwt.SigningMethod) (string, error) {
+	c := new(jwt.MapClaims) //map[string]any{}
+	err := json.Unmarshal([]byte(data), &c)
+	if err != nil {
+		return "", err
+	}
+
+	token := jwt.New(method)
+	token.Claims = c
+	signingString, err := token.SignedString([]byte(secret))
+
+	return signingString, err
+}
+
 // output token to stdout
 // if outputType is text, output only header
 // if outputType is json, output header and claims
