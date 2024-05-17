@@ -8,15 +8,38 @@ import (
 	"strings"
 )
 
-func SplitToken(tokenString string) (string, string, string) {
-	logger.Info("Splitting token")
-	split := strings.Split(tokenString, ".")
-	return split[0], split[1], split[2]
+type Parser struct {
+	tokenString string
+	secrets     string
+	token       *jwt.Token
 }
 
-func ParseWithoutVerification(tokenString string) error {
+func NewParser() *Parser {
+	logger.Info("Creating new parser")
+	return &Parser{}
+}
+
+func (p *Parser) SplitToken(tokenString string) ([]string, error) {
+	logger.Info("Splitting token")
+	if tokenString == "" {
+		return nil, fmt.Errorf("token string is empty")
+	}
+	count := strings.Count(tokenString, ".")
+	if count > 2 {
+		return nil, fmt.Errorf("token string has more than 2 dots")
+	}
+	split := strings.Split(tokenString, ".")
+	return split, nil
+}
+
+func (p *Parser) ParseWithoutVerification(tokenString string) error {
 	logger.Info("Parsing token without verification")
-	header, claims, signature := SplitToken(tokenString)
+	token, err := p.SplitToken(tokenString)
+	if err != nil {
+		logger.Error("Error splitting token", zap.Error(err))
+		return err
+	}
+	header, claims, signature := token[0], token[1], token[2]
 	headerDecoded, err := DecodeBase64String(header)
 	if err != nil {
 		logger.Error("Error decoding header", zap.Error(err))

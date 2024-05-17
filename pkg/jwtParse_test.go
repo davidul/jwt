@@ -6,25 +6,31 @@ import (
 )
 
 func TestSplitToken(t *testing.T) {
+	p := NewParser()
 	token := "a.b.c"
-	s1, s2, s3 := SplitToken(token)
-	if s1 != "a" {
-		t.Errorf("Expected a, got %s", s1)
+	s, err := p.SplitToken(token)
+	if err != nil {
+		t.Errorf("Error splitting token: %s", err)
 	}
 
-	if s2 != "b" {
-		t.Errorf("Expected b, got %s", s2)
+	if s[0] != "a" {
+		t.Errorf("Expected a, got %s", s[0])
 	}
 
-	if s3 != "c" {
-		t.Errorf("Expected c, got %s", s3)
+	if s[1] != "b" {
+		t.Errorf("Expected b, got %s", s[1])
+	}
+
+	if s[2] != "c" {
+		t.Errorf("Expected c, got %s", s[0])
 	}
 }
 
 var sampleToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhdWQiLCJleHAiOjQ3MDE5NzQ0MDAsImlhdCI6MTU0NjEyODAwMCwiaXNzIjoiaXNzIiwibmJmIjoxNTQ2MjE0NDAwLCJzdWIiOiJzdWIifQ.tfZF2KvIs-ZkWuBZmS1Y4vezOJ2Qs7P_nJkFugwPS1"
 
 func TestParseWithoutVerification(t *testing.T) {
-	err := ParseWithoutVerification(sampleToken)
+	p := NewParser()
+	err := p.ParseWithoutVerification(sampleToken)
 	if err != nil {
 		t.Errorf("Error parsing token: %s", err)
 	}
