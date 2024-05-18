@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"github.com/golang-jwt/jwt"
 	"go.uber.org/zap"
@@ -11,6 +12,11 @@ import (
 type Parser struct {
 	tokenString string
 	secrets     string
+	header      string
+	claims      string
+	signature   string
+	headerMap   map[string]interface{}
+	claimsMap   map[string]interface{}
 	token       *jwt.Token
 }
 
@@ -55,6 +61,19 @@ func (p *Parser) ParseWithoutVerification(tokenString string) error {
 	}
 	decodeString, err := DecodeBase64String(signature)
 	fmt.Println("Signature: ", decodeString)
+	p.tokenString = tokenString
+	p.header = string(headerDecoded)
+	p.claims = string(claimsDecoded)
+	p.signature = string(decodeString)
+
+	err = json.NewDecoder(strings.NewReader(p.header)).Decode(&p.headerMap)
+	if err != nil {
+		logger.Error("Error decoding header", zap.Error(err))
+	}
+	err = json.NewDecoder(strings.NewReader(p.claims)).Decode(&p.claimsMap)
+	if err != nil {
+		logger.Error("Error decoding claims", zap.Error(err))
+	}
 	return nil
 }
 

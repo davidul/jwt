@@ -34,6 +34,15 @@ func TestParseWithoutVerification(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error parsing token: %s", err)
 	}
+
+	assert.Equal(t, p.header, `{"alg":"HS256","typ":"JWT"}`)
+	assert.Equal(t, p.claims, `{"aud":"aud","exp":4701974400,"iat":1546128000,"iss":"iss","nbf":1546214400,"sub":"sub"}`)
+	assert.Equal(t, p.signature, "")
+
+	assert.Equal(t, p.headerMap["alg"], "HS256")
+	assert.Equal(t, p.headerMap["typ"], "JWT")
+	assert.Equal(t, p.claimsMap["aud"], "aud")
+	assert.Equal(t, p.claimsMap["exp"], float64(4701974400))
 }
 
 func TestDecodeBase64String(t *testing.T) {
@@ -42,4 +51,5 @@ func TestDecodeBase64String(t *testing.T) {
 		t.Errorf("Error decoding base64 string: %s", err)
 	}
 	assert.Equal(t, decoded, []byte(`{"alg":"HS256","typ":"JWT"}`))
+
 }
