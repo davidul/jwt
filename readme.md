@@ -3,6 +3,13 @@
 Command line application for testing JWT. You can generate JWT and sign it.
 You can also generate public and private key for testing purposes.
 ## Commands
+```shell
+help
+decode  Decodes JWT Token
+encode  Encodes JWT Token
+gen     Generates JWT Token
+genkeys Generates public and private key
+```
 ### Help
 ```shell
 ./jwt help
